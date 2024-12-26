@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "321989227940",
+    "project_id": "humanresourcesfinalprojectd",
+    "storage_bucket": "humanresourcesfinalprojectd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:321989227940:android:63c6ca43d515e1f1837d31",
+        "android_client_info": {
+          "package_name": "com.example.humanresourcesfinalproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_ABm6neMj4WyaaZpPHJdQRk69S8PChr8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
