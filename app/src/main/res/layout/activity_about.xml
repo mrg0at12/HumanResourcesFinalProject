@@ -5,16 +5,48 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F5E7CF"
     tools:context=".About">
 
     <Button
         android:id="@+id/goBackAboutBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="403dp"
+        android:layout_height="0dp"
         android:layout_marginTop="50dp"
+        android:layout_marginBottom="40dp"
+
+        android:backgroundTint="#3c3d37"
         android:text="Go Back"
+
+        android:textSize="35dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/textView"
+        app:layout_constraintVertical_bias="0.935" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="213dp"
+        android:layout_marginBottom="32dp"
+        android:gravity="center"
+        android:text="Here At Human Resources, we aim to revolutionize how courses are created, enrolled in, and managed. Our platform simplifies the process of course creation with intuitive tools, making it accessible to educators and trainers of all levels. Signing up for courses is seamless, offering users an efficient and user-friendly experience. Additionally, our robust management system ensures effortless organization of course lists, enabling administrators to focus on delivering value rather than navigating complex systems. With Human Resources, we empower learning by making course management easier, faster, and more effective for everyone."
+        android:textSize="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/goBackAboutBtn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"></TextView>
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="246dp"
+        android:layout_height="293dp"
+        android:layout_marginBottom="584dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/logo" />
 </androidx.constraintlayout.widget.ConstraintLayout>
