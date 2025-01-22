@@ -38,7 +38,71 @@ public class User {
 
 
 
+    public String getId() {
+        return id;
+    }
+
     public String getFname() {
         return fname;
+    }
+
+    public String getLname() {
+        return lname;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getShirtSize() {
+        return shirtSize;
+    }
+
+    public String getKidId() {
+        return kidId;
+    }
+
+    public String getSchool() {
+        return school;
+    }
+
+    public String getParentName() {
+        return parentName;
+    }
+
+    public String getParentPhone() {
+        return parentPhone;
+    }
+
+    public String getSchoolYear() {
+        return schoolYear;
+    }
+
+    public String getHealthFund() {
+        return healthFund;
+    }
+
+    public String getHealthProblems() {
+        return Healthproblems;
+    }
+
+    public String getFoodType() {
+        return foodType;
+    }
+
+    public Boolean getIsTeacher() {
+        return isTeacher;
+    }
+
+    public Boolean getIsGuide() {
+        return isGuide;
     }
 }

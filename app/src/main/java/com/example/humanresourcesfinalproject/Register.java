@@ -124,11 +124,14 @@ public class Register extends AppCompatActivity {
             Boolean isTeacher = tbIsTeacher.isChecked();
             Boolean isGuide = tbIsGuide.isChecked();
 
+            // Validate input fields before proceeding
             if (validateInput(fname, lname, phone, email, password, shirtSize, kidId, school, parentName, parentPhone, schoolYear, healthFund, foodType)) {
+                // Create Firebase user
                 mAuth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener(this, task -> {
                             if (task.isSuccessful()) {
                                 FirebaseUser fireuser = mAuth.getCurrentUser();
+                                // Create a User object with all fields
                                 User newUser = new User(
                                         fireuser.getUid(), fname, lname, phone, email, password,
                                         shirtSize, kidId, school, parentName, parentPhone,
@@ -136,9 +139,11 @@ public class Register extends AppCompatActivity {
                                         isTeacher, isGuide
                                 );
 
+                                // Save user to Firebase Realtime Database
                                 myRef.child(fireuser.getUid()).setValue(newUser)
                                         .addOnCompleteListener(dbTask -> {
                                             if (dbTask.isSuccessful()) {
+                                                // Save credentials in SharedPreferences
                                                 SharedPreferences.Editor editor = sharedpreferences.edit();
                                                 editor.putString("email", email);
                                                 editor.putString("password", password);
