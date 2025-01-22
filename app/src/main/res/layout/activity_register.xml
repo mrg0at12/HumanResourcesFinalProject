@@ -1,127 +1,176 @@
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#EFE0CA"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="#ecdfcc"
+    tools:context=".Register"
+    >
 
-    <!-- Title at the very top -->
 
-    <!-- First Name -->
-
-    <!-- Last Name -->
-
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="192dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="3dp"
-        android:layout_marginBottom="60dp"
-        android:src="@drawable/logo"
-        app:layout_constraintBottom_toTopOf="@+id/etFname"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="228dp"
-        android:text="Register"
-        android:textColor="@android:color/black"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <EditText
-        android:id="@+id/etFname"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="44dp"
-        android:hint="First Name"
-        android:inputType="textPersonName"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+        android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/etLname"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:hint="Last Name"
-        android:inputType="textPersonName"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/etFname" />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="234dp"
+            android:src="@drawable/logo"></ImageView>
 
-    <!-- Phone Number -->
-    <EditText
-        android:id="@+id/etPhone"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:hint="Phone Number"
-        android:inputType="phone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/etLname" />
+        <!-- First Name -->
+        <EditText
+            android:id="@+id/etFname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="First Name"
+            android:inputType="textPersonName" />
 
-    <!-- Email -->
-    <EditText
-        android:id="@+id/etEmail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:hint="Email"
-        android:inputType="textEmailAddress"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/etPhone" />
+        <!-- Last Name -->
+        <EditText
+            android:id="@+id/etLname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Last Name"
+            android:inputType="textPersonName" />
 
-    <!-- Password -->
-    <EditText
-        android:id="@+id/etPassword"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:hint="Password"
-        android:inputType="textPassword"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/etEmail" />
+        <!-- Phone -->
+        <EditText
+            android:id="@+id/etPhone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Phone Number"
+            android:inputType="phone" />
 
-    <!-- Register Button -->
-    <Button
-        android:id="@+id/btnReg"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Register"
-        android:backgroundTint="#3c3d37"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/etPassword" />
+        <!-- Email -->
+        <EditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email"
+            android:inputType="textEmailAddress" />
 
-    <Button
-        android:id="@+id/goBackRegisterBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:text="Go Back"
-        android:backgroundTint="#3c3d37"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        <!-- Password -->
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:inputType="textPassword" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- Shirt Size -->
+        <Spinner
+            android:id="@+id/spShirtSize"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:prompt="@string/shirt_size_prompt" />
+
+        <!-- Kid ID -->
+        <EditText
+            android:id="@+id/etKidId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Kid ID"
+            android:inputType="text" />
+
+        <!-- School -->
+        <EditText
+            android:id="@+id/etSchool"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="School"
+            android:inputType="text" />
+
+        <!-- Parent Name -->
+        <EditText
+            android:id="@+id/etParentName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Parent Name"
+            android:inputType="textPersonName" />
+
+        <!-- Parent Phone -->
+        <EditText
+            android:id="@+id/etParentPhone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Parent Phone"
+            android:inputType="phone" />
+
+        <!-- School Year -->
+        <EditText
+            android:id="@+id/etSchoolYear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="School Year"
+            android:inputType="text" />
+
+        <!-- Health Fund -->
+        <EditText
+            android:id="@+id/etHealthFund"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Health Fund"
+            android:inputType="text" />
+
+        <!-- Health Problems -->
+        <EditText
+            android:id="@+id/etHealthProblems"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Health Problems"
+            android:inputType="text" />
+
+        <!-- Food Type Spinner -->
+        <Spinner
+            android:id="@+id/spFoodType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:prompt="@string/food_type_prompt" />
+
+        <!-- Teacher Toggle Button -->
+        <ToggleButton
+            android:id="@+id/tbIsTeacher"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#3c3d37"
+            android:textColor="@android:color/white"
+            android:textOn="Teacher: Yes"
+            android:textOff="Teacher: No" />
+
+        <!-- Guide Toggle Button -->
+        <ToggleButton
+            android:id="@+id/tbIsGuide"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#3c3d37"
+            android:textColor="@android:color/white"
+            android:textOn="Guide: Yes"
+
+            android:textOff="Guide: No" />
+
+        <!-- Register Button -->
+        <Button
+            android:id="@+id/btnReg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Register"
+            android:backgroundTint="#3c3d37"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="16dp" />
+
+        <!-- Go Back Button -->
+        <Button
+            android:id="@+id/goBackRegisterBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#3c3d37"
+            android:textColor="@android:color/white"
+            android:text="Go Back"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
+</ScrollView>

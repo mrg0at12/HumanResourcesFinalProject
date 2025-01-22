@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">HumanResourcesFinalProject</string>
+    <string name="food_type_prompt">Select Food Type</string>
+    <string-array name="food_types">
+        <item>Vegan</item>
+        <item>Omnivore</item>
+        <item>Vegetarian</item>
+    </string-array>
+
+    <string name="shirt_size_prompt">Select Shirt Size</string>
+    <string-array name="shirt_sizes">
+        <item>S</item>
+        <item>M</item>
+        <item>L</item>
+        <item>XL</item>
+        <item>XXL</item>
+        <item>XXXL</item>
+    </string-array>
 </resources>
