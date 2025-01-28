@@ -5,6 +5,7 @@ public class User {
     String fname, lname, phone, email, password,shirtSize,kidId,school,parentName,parentPhone,schoolYear;
     String healthFund,Healthproblems,foodType;
     Boolean isTeacher,isGuide;
+    //String courses;
 
 
 

@@ -28,6 +28,8 @@ import com.google.firebase.auth.FirebaseAuth;
 public class MainPage extends AppCompatActivity {
     private Button changePasswordButton;
     private Button logOutButton;
+    private Button reportsButton ;
+
 
 
     @Override
@@ -42,8 +44,15 @@ public class MainPage extends AppCompatActivity {
         });
 
         changePasswordButton = findViewById(R.id.ChangePassword);
+        reportsButton= findViewById(R.id.Reports);
 
         logOutButton = findViewById(R.id.LogOut);
+
+        reportsButton.setOnClickListener(v -> {
+            // Start the mylists activity
+            Intent intent = new Intent(MainPage.this, MyLists.class);
+            startActivity(intent);
+        });
 
 
         // Set an OnClickListener to navigate to ResetPassword activity
