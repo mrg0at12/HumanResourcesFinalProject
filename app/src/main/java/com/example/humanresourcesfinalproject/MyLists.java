@@ -34,5 +34,16 @@ public class MyLists extends AppCompatActivity {
                 finish(); // Finish the current activity (LoginActivity)
             }
         });
+
+        Button btnInstroucturs=findViewById(R.id.btnInstroucturs);
+        btnInstroucturs.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Go back to StartPage
+                Intent intent = new Intent(MyLists.this, SchoolInst.class);
+                startActivity(intent);
+                finish(); // Finish the current activity (LoginActivity)
+            }
+        });
     }
 }

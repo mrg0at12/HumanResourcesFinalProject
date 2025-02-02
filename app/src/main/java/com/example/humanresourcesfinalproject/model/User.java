@@ -3,7 +3,7 @@ package com.example.humanresourcesfinalproject.model;
 public class User {
     String id;
     String fname, lname, phone, email, password,shirtSize,kidId,school,parentName,parentPhone,schoolYear;
-    String healthFund,Healthproblems,foodType;
+    String healthFund,healthProblems,foodType;
     Boolean isTeacher,isGuide;
     //String courses;
 
@@ -30,7 +30,7 @@ public class User {
         this.parentPhone = parentPhone;
         this.schoolYear = schoolYear;
         this.healthFund = healthFund;
-        this.Healthproblems = healthProblems;
+        this.healthProblems = healthProblems;
         this.foodType = foodType;
         this.isTeacher = isTeacher;
         this.isGuide = isGuide;
@@ -92,7 +92,7 @@ public class User {
     }
 
     public String getHealthProblems() {
-        return Healthproblems;
+        return healthProblems;
     }
 
     public String getFoodType() {
