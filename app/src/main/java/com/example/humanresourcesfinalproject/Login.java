@@ -12,20 +12,31 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 public class Login extends AppCompatActivity {
 
     private EditText etEmail, etPassword;
     private Button btnLogin;
     private FirebaseAuth mAuth;
+    private FirebaseDatabase database;
+    private DatabaseReference myUserRef, myAdminRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // Initialize Firebase Auth
+        // Initialize Firebase Auth and Database
         mAuth = FirebaseAuth.getInstance();
+        database = FirebaseDatabase.getInstance();
+        myUserRef = database.getReference("Users");  // Access User table
+        myAdminRef = database.getReference("Admins");  // Access Admin table
 
         // Link UI elements
         etEmail = findViewById(R.id.etLoginEmail);
@@ -33,14 +44,11 @@ public class Login extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
 
         Button goBackBtn = findViewById(R.id.goBackLoginBtn);
-        goBackBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Go back to StartPage
-                Intent intent = new Intent(Login.this, StartPage.class);
-                startActivity(intent);
-                finish(); // Finish the current activity (LoginActivity)
-            }
+        goBackBtn.setOnClickListener(v -> {
+            // Go back to StartPage
+            Intent intent = new Intent(Login.this, StartPage.class);
+            startActivity(intent);
+            finish();
         });
 
         btnLogin.setOnClickListener(v -> {
@@ -69,16 +77,69 @@ public class Login extends AppCompatActivity {
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        // Login successful
-                        Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show();
-                        Intent goHome = new Intent(getApplicationContext(), MainPage.class);
-                        startActivity(goHome);
-                        finish();
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        Log.d("TAG", "signInWithEmail:success");
+
+                        // Check if the user exists in the "Admins" table first
+                        checkIfAdminExists(user.getUid());
                     } else {
-                        // Login failed
                         Log.w("TAG", "signInWithEmail:failure", task.getException());
-                        Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Login failed. Please check your credentials.", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void checkIfAdminExists(String userId) {
+        // Query the Admins table to see if the user exists
+        myAdminRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    // The user is found in the Admins table
+                    Log.d("AdminCheck", "Admin user logged in.");
+                    redirectToMainPage();
+                } else {
+                    // The user doesn't exist in the Admins table, check the Users table
+                    checkIfUserExists(userId);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("AdminCheck", "Error checking admin existence", databaseError.toException());
+                Toast.makeText(Login.this, "Error checking admin status. Please try again later.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void checkIfUserExists(String userId) {
+        // Query the Users table to see if the user exists
+        myUserRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    // The user exists in the Users table (regular user)
+                    Log.d("UserCheck", "Regular user logged in.");
+                    redirectToMainPage();
+                } else {
+                    // User doesn't exist in both tables
+                    Log.d("UserCheck", "User not found in either Users or Admins.");
+                    Toast.makeText(Login.this, "User not found. Please check your credentials.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("UserCheck", "Error checking user existence", databaseError.toException());
+                Toast.makeText(Login.this, "Error checking user status. Please try again later.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void redirectToMainPage() {
+        // Both regular users and admins are redirected to the MainPage
+        Intent goHome = new Intent(getApplicationContext(), MainPage.class);
+        startActivity(goHome);
+        finish();
     }
 }
