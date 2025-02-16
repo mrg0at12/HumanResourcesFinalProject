@@ -1,16 +1,17 @@
 package com.example.humanresourcesfinalproject.model;
 
+import java.util.ArrayList;
+
 public class User {
-    String id;
-    String fname, lname, phone, email, password,shirtSize,kidId,school,parentName,parentPhone,schoolYear;
-    String healthFund,healthProblems,foodType;
-    Boolean isTeacher,isGuide;
-    //String courses;
-
-
+    private String id;
+    private String fname, lname, phone, email, password, shirtSize, kidId, school, parentName, parentPhone, schoolYear;
+    private String healthFund, healthProblems, foodType;
+    private Boolean isTeacher, isGuide;
+    private ArrayList<Course> enrolledCourses;
 
     public User() {
         // Empty constructor
+        this.enrolledCourses = new ArrayList<>();
     }
 
     public User(String id, String fname, String lname, String phone, String email, String password,
@@ -34,10 +35,8 @@ public class User {
         this.foodType = foodType;
         this.isTeacher = isTeacher;
         this.isGuide = isGuide;
+        this.enrolledCourses = new ArrayList<>();
     }
-
-
-
 
     public String getId() {
         return id;
@@ -105,5 +104,13 @@ public class User {
 
     public Boolean getIsGuide() {
         return isGuide;
+    }
+
+    public ArrayList<Course> getEnrolledCourses() {
+        return enrolledCourses;
+    }
+
+    public void enrollInCourse(Course course) {
+        enrolledCourses.add(course);
     }
 }

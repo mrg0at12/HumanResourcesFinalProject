@@ -45,5 +45,27 @@ public class MyLists extends AppCompatActivity {
                 finish(); // Finish the current activity (LoginActivity)
             }
         });
+
+        Button btnSchoolHealth=findViewById(R.id.btnHealthReportSchool);
+        btnSchoolHealth.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Go back to StartPage
+                Intent intent = new Intent(MyLists.this, SchoolHealth.class);
+                startActivity(intent);
+                finish(); // Finish the current activity (LoginActivity)
+            }
+        });
+
+        Button btnEntSchool=findViewById(R.id.btnEntireSchool2);
+        btnEntSchool.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Go back to StartPage
+                Intent intent = new Intent(MyLists.this, SchoolComp.class);
+                startActivity(intent);
+                finish(); // Finish the current activity (LoginActivity)
+            }
+        });
     }
 }

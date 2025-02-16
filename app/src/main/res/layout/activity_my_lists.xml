@@ -62,7 +62,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:backgroundTint="#3c3d37"
-        android:text="Helath report"
+        android:text="Health report"
         app:layout_constraintBottom_toTopOf="@+id/btnInstroucturs"
         app:layout_constraintStart_toStartOf="@+id/btnEntireSchool2"
         app:layout_constraintTop_toBottomOf="@+id/btnEntireSchool2" />
