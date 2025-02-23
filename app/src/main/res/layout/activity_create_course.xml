@@ -5,6 +5,130 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#EFE0CA"
     tools:context=".CreateCourse">
+
+
+    <EditText
+        android:id="@+id/etPricforT"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="9dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="9dp"
+        android:layout_marginBottom="22dp"
+        android:ems="10"
+        android:hint="price for teacher"
+        android:inputType="text"
+        android:text=""
+        app:layout_constraintBottom_toTopOf="@+id/doneCreateCourse"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etPriceForp" />
+
+    <EditText
+        android:id="@+id/etPriceForp"
+        android:layout_width="387dp"
+        android:layout_height="42dp"
+        android:layout_marginBottom="138dp"
+        android:ems="10"
+        android:hint="Price for pupil"
+        android:inputType="text"
+        android:text=""
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/calendarView"
+        app:layout_constraintStart_toEndOf="@+id/calendarView" />
+
+    <CalendarView
+        android:id="@+id/calendarView2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="11dp"
+        android:layout_marginBottom="1dp"
+        app:layout_constraintBottom_toTopOf="@+id/etPriceForp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/calendarView"
+        app:layout_constraintTop_toBottomOf="@+id/tvenddate" />
+
+    <ImageView
+        android:id="@+id/imageView7"
+        android:layout_width="238dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="6dp"
+        app:layout_constraintBottom_toTopOf="@+id/etCourseName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/logo" />
+
+    <Button
+        android:id="@+id/btnGobackCreateCouse"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="46dp"
+        android:backgroundTint="#3c3d37"
+        android:text="go back"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <CalendarView
+        android:id="@+id/calendarView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="11dp"
+        android:layout_marginEnd="11dp"
+        app:layout_constraintBottom_toTopOf="@+id/etPriceForp"
+        app:layout_constraintEnd_toStartOf="@+id/calendarView2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/calendarView2" />
+
+    <EditText
+        android:id="@+id/etCourseName"
+        android:layout_width="399dp"
+        android:layout_height="46dp"
+        android:layout_marginTop="207dp"
+        android:ems="10"
+        android:hint="Course Name"
+        android:inputType="text"
+        android:text=""
+        app:layout_constraintEnd_toEndOf="@+id/calendarView"
+        app:layout_constraintStart_toEndOf="@+id/calendarView"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvstartdate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="66dp"
+        android:layout_marginEnd="72dp"
+        android:text="start date"
+        app:layout_constraintEnd_toEndOf="@+id/calendarView"
+        app:layout_constraintStart_toStartOf="@+id/etCourseName"
+        app:layout_constraintTop_toBottomOf="@+id/etCourseName" />
+
+    <TextView
+        android:id="@+id/tvenddate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="67dp"
+        android:layout_marginEnd="68dp"
+        android:text="end date"
+        app:layout_constraintEnd_toEndOf="@+id/etCourseName"
+        app:layout_constraintStart_toStartOf="@+id/calendarView2"
+        app:layout_constraintTop_toBottomOf="@+id/etCourseName" />
+
+    <Button
+        android:id="@+id/doneCreateCourse"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="14dp"
+        android:backgroundTint="#3c3d37"
+        android:text="done"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

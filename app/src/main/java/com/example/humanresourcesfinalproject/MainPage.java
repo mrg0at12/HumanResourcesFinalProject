@@ -24,7 +24,7 @@ public class MainPage extends AppCompatActivity {
     private Button logOutButton;
     private Button reportsButton;
     private Button manageButton;
-
+    private Button SignUpForCourseBtn;
     private FirebaseAuth mAuth;
     private DatabaseReference userRef, adminRef;
 
@@ -44,7 +44,17 @@ public class MainPage extends AppCompatActivity {
         changePasswordButton = findViewById(R.id.ChangePassword);
         reportsButton = findViewById(R.id.Reports);
         logOutButton = findViewById(R.id.LogOut);
-        manageButton = findViewById(R.id.Mange); // System Management button
+        manageButton = findViewById(R.id.Mange);
+
+
+        SignUpForCourseBtn=findViewById(R.id.SignUp);
+        SignUpForCourseBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(MainPage.this, SignUpForCourse.class);
+            startActivity(intent);
+        });
+
+
+        // System Management button
 
         reportsButton.setEnabled(false);
         manageButton.setEnabled(false); // Disable buttons initially
