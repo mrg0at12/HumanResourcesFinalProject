@@ -1,11 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F5E7CF"
     tools:context=".SystemManagement">
 
-  </androidx.constraintlayout.widget.ConstraintLayout>
+
+  <TextView
+      android:id="@+id/tvsysmanagement"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginEnd="34dp"
+      android:text="system management"
+      android:textSize="30dp"
+      app:layout_constraintBottom_toBottomOf="@+id/imageView4"
+      app:layout_constraintEnd_toEndOf="@+id/imageView4" />
+
+  <ImageView
+      android:id="@+id/imageView4"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:layout_marginStart="28dp"
+      android:layout_marginTop="16dp"
+      android:layout_marginEnd="28dp"
+      android:layout_marginBottom="44dp"
+      app:layout_constraintBottom_toTopOf="@+id/btncreatecourse"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      app:srcCompat="@drawable/logo" />
+
+  <Button
+      android:id="@+id/btncreatecourse"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="3dp"
+      android:layout_marginBottom="22dp"
+      android:backgroundTint="#3c3d37"
+      android:text="create course"
+      app:layout_constraintBottom_toTopOf="@+id/btnDeleteCourses"
+      app:layout_constraintStart_toStartOf="@+id/btnDeleteCourses"
+      app:layout_constraintTop_toBottomOf="@+id/imageView4" />
+
+  <Button
+      android:id="@+id/btnDeleteCourses"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="4dp"
+      android:layout_marginBottom="16dp"
+      android:backgroundTint="#3c3d37"
+      android:text="delete courses"
+      app:layout_constraintBottom_toTopOf="@+id/btnmanageAdmins"
+      app:layout_constraintStart_toStartOf="@+id/btnmanageAdmins"
+      app:layout_constraintTop_toBottomOf="@+id/btncreatecourse" />
+
+  <Button
+      android:id="@+id/btnmanageAdmins"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="33dp"
+      android:backgroundTint="#3c3d37"
+      android:text="manage admins"
+      app:layout_constraintBottom_toTopOf="@+id/gobackSysManagement"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/btnDeleteCourses" />
+
+  <Button
+      android:id="@+id/gobackSysManagement"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="26dp"
+      android:layout_marginBottom="99dp"
+      android:backgroundTint="#3c3d37"
+      android:text="go back"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintStart_toStartOf="@+id/btnmanageAdmins"
+      app:layout_constraintTop_toBottomOf="@+id/btnmanageAdmins" />
+</androidx.constraintlayout.widget.ConstraintLayout>
