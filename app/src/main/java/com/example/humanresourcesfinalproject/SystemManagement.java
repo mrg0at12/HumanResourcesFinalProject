@@ -44,5 +44,16 @@ public class SystemManagement extends AppCompatActivity {
                 finish(); // Finish the current activity (LoginActivity)
             }
         });
+
+        Button DeleteCourse = findViewById(R.id.btnDeleteCourses);
+        DeleteCourse.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Go back to StartPage
+                Intent intent = new Intent(SystemManagement.this, DeleteCourse.class);
+                startActivity(intent);
+                finish(); // Finish the current activity (LoginActivity)
+            }
+        });
     }
 }
