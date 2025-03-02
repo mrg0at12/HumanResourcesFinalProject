@@ -18,6 +18,7 @@ import com.example.humanresourcesfinalproject.model.Course;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
@@ -29,7 +30,8 @@ import java.util.Locale;
 public class SignUpForCourse extends AppCompatActivity {
     private Button goBack;
     private ListView lvCourses;
-    private DatabaseReference databaseReference;
+    private DatabaseReference coursesReference;
+    // Reference to the "Users" node for regular users.
     private DatabaseReference userReference;
     private FirebaseUser currentUser;
     @Override
@@ -49,7 +51,7 @@ public class SignUpForCourse extends AppCompatActivity {
             finish();
         });
 
-        databaseReference = FirebaseDatabase.getInstance().getReference("courses");
+        coursesReference = FirebaseDatabase.getInstance().getReference("courses");
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -64,7 +66,7 @@ public class SignUpForCourse extends AppCompatActivity {
     }
 
     private void getCoursesFromFirebase() {
-        databaseReference.addValueEventListener(new ValueEventListener() {
+        coursesReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 ArrayList<String> courseDetailsList = new ArrayList<>();
@@ -75,38 +77,115 @@ public class SignUpForCourse extends AppCompatActivity {
                         courseDetailsList.add(courseDetails);
                     }
                 }
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(SignUpForCourse.this, android.R.layout.simple_list_item_1, courseDetailsList);
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(SignUpForCourse.this,
+                        android.R.layout.simple_list_item_1, courseDetailsList);
                 lvCourses.setAdapter(adapter);
             }
 
             @Override
-            public void onCancelled(com.google.firebase.database.DatabaseError databaseError) {
+            public void onCancelled(DatabaseError databaseError) {
                 Toast.makeText(SignUpForCourse.this, "Failed to load courses", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
+    // Updated method: Try "Users" node first, then fallback to "Admins"
     private void assignUserToCourse(String courseId) {
         if (currentUser != null) {
             String userId = currentUser.getUid();
-            userReference.child(userId).child("enrolledCourses").push().setValue(courseId)
-                    .addOnSuccessListener(aVoid -> Toast.makeText(SignUpForCourse.this, "Successfully enrolled in course", Toast.LENGTH_SHORT).show())
-                    .addOnFailureListener(e -> Toast.makeText(SignUpForCourse.this, "Failed to enroll in course", Toast.LENGTH_SHORT).show());
+            // Try to fetch data from the "Users" node
+            userReference.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        Boolean isAdmin = snapshot.child("isAdmin").getValue(Boolean.class);
+                        if (isAdmin != null && isAdmin) {
+                            // The logged-in user is an admin – assign via admin method.
+                            assignAdminToCourse(userId, courseId);
+                        } else {
+                            // Regular user
+                            assignStudentToCourse(userId, courseId);
+                        }
+                    } else {
+                        // Not found in "Users" node, try the "Admins" node
+                        DatabaseReference adminRef = FirebaseDatabase.getInstance().getReference("Admins");
+                        adminRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot adminSnapshot) {
+                                if (adminSnapshot.exists()) {
+                                    assignAdminToCourse(userId, courseId);
+                                } else {
+                                    Toast.makeText(SignUpForCourse.this, "User data not found", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                            @Override
+                            public void onCancelled(DatabaseError error) {
+                                Toast.makeText(SignUpForCourse.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }
+                @Override
+                public void onCancelled(DatabaseError error) {
+                    Toast.makeText(SignUpForCourse.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 
-    // Format course details to display in a readable way
+    private void assignStudentToCourse(String userId, String courseId) {
+        DatabaseReference studentCoursesRef = userReference.child(userId).child("enrolledCourses");
+        studentCoursesRef.orderByValue().equalTo(courseId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            Toast.makeText(SignUpForCourse.this, "Already enrolled in this course", Toast.LENGTH_SHORT).show();
+                        } else {
+                            studentCoursesRef.push().setValue(courseId)
+                                    .addOnSuccessListener(aVoid ->
+                                            Toast.makeText(SignUpForCourse.this, "Successfully enrolled in course", Toast.LENGTH_SHORT).show())
+                                    .addOnFailureListener(e ->
+                                            Toast.makeText(SignUpForCourse.this, "Failed to enroll in course", Toast.LENGTH_SHORT).show());
+                        }
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+                        Toast.makeText(SignUpForCourse.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void assignAdminToCourse(String userId, String courseId) {
+        DatabaseReference adminCoursesRef = FirebaseDatabase.getInstance().getReference("Admins")
+                .child(userId).child("adminCourses");
+        adminCoursesRef.orderByValue().equalTo(courseId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            Toast.makeText(SignUpForCourse.this, "Already enrolled in this course", Toast.LENGTH_SHORT).show();
+                        } else {
+                            adminCoursesRef.push().setValue(courseId)
+                                    .addOnSuccessListener(aVoid ->
+                                            Toast.makeText(SignUpForCourse.this, "Admin successfully assigned to course", Toast.LENGTH_SHORT).show())
+                                    .addOnFailureListener(e ->
+                                            Toast.makeText(SignUpForCourse.this, "Failed to assign admin to course", Toast.LENGTH_SHORT).show());
+                        }
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+                        Toast.makeText(SignUpForCourse.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
     private String formatCourseDetails(Course course) {
-        // Format dates
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         String startDate = dateFormat.format(course.getStartDate());
         String endDate = dateFormat.format(course.getEndDate());
-
-        // Get price details
         String pricePupil = String.format(Locale.getDefault(), "$%.2f", course.getPricePupil());
         String priceTeacher = String.format(Locale.getDefault(), "$%.2f", course.getPriceTeach());
-
-        // Format the full course details string
         return String.format("%s\nStart Date: %s\nEnd Date: %s\nPrice - Pupil: %s / Teacher: %s",
                 course.getCourseName(), startDate, endDate, pricePupil, priceTeacher);
     }
