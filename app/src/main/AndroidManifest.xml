@@ -13,6 +13,12 @@
         android:theme="@style/Theme.HumanResourcesFinalProject"
         tools:targetApi="31">
         <activity
+            android:name=".ChooseCourse"
+            android:exported="false" />
+        <activity
+            android:name=".CourseCompList"
+            android:exported="false" />
+        <activity
             android:name=".ManageAdmins"
             android:exported="false" />
         <activity

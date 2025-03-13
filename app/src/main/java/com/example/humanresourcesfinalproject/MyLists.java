@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,7 +12,18 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.humanresourcesfinalproject.model.Admin;
+import com.example.humanresourcesfinalproject.model.User;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 public class MyLists extends AppCompatActivity {
+    private FirebaseAuth mAuth;
+    private DatabaseReference usersRef, adminsRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +36,11 @@ public class MyLists extends AppCompatActivity {
             return insets;
         });
 
+        mAuth = FirebaseAuth.getInstance();
+        usersRef = FirebaseDatabase.getInstance().getReference("Users");
+        adminsRef = FirebaseDatabase.getInstance().getReference("Admins");
+
+
         Button goBackBtn = findViewById(R.id.GoBackMyLists);
         goBackBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -34,6 +51,12 @@ public class MyLists extends AppCompatActivity {
                 finish(); // Finish the current activity (LoginActivity)
             }
         });
+
+
+
+        Button btnCourseComprhensive = findViewById(R.id.btnEntireSchool);
+        btnCourseComprhensive.setOnClickListener(v -> checkUserCourses());
+
 
         Button btnInstroucturs=findViewById(R.id.btnInstroucturs);
         btnInstroucturs.setOnClickListener(new View.OnClickListener() {
@@ -68,4 +91,60 @@ public class MyLists extends AppCompatActivity {
             }
         });
     }
+    private void checkUserCourses() {
+        String userId = mAuth.getCurrentUser().getUid();
+
+        // First, check in Users table
+        usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    User user = snapshot.getValue(User.class);
+                    handleCourseCheck(user);
+                } else {
+                    // If not found in Users, check in Admins table
+                    adminsRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot snapshot) {
+                            if (snapshot.exists()) {
+                                Admin admin = snapshot.getValue(Admin.class);
+                                handleCourseCheck(admin);
+                            } else {
+                                Toast.makeText(MyLists.this, "User not found in database", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError error) {
+                            Toast.makeText(MyLists.this, "Error fetching admin data", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                Toast.makeText(MyLists.this, "Error fetching user data", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void handleCourseCheck(User user) {
+        if (user != null && user.getEnrolledCourses() != null) {
+            int courseCount = user.getEnrolledCourses().size();
+
+            if (courseCount >= 2) {
+                // Redirect to ChooseCourse if user has 2 or more courses
+                Intent intent = new Intent(MyLists.this, ChooseCourse.class);
+                startActivity(intent);
+            } else {
+                // Redirect to CourseCompList otherwise
+                Intent intent = new Intent(MyLists.this, CourseCompList.class);
+                startActivity(intent);
+            }
+        } else {
+            Toast.makeText(MyLists.this, "No courses found.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }
