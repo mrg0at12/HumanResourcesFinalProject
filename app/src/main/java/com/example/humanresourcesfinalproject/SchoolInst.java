@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -34,6 +35,7 @@ public class SchoolInst extends AppCompatActivity {
     private DatabaseReference databaseReference;
     private String currentUserSchool = ""; // Initially empty
     private FirebaseAuth auth;
+    private SearchView searchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,8 +48,20 @@ public class SchoolInst extends AppCompatActivity {
             return insets;
         });
 
+        searchView = findViewById(R.id.SvSchoolInst);
 
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false; // Not needed for live filtering
+            }
 
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                adapter.getFilter().filter(newText);
+                return false;
+            }
+        });
 
         listView = findViewById(R.id.instructorListView); // ✅ Use ListView from XML
         instructorList = new ArrayList<>();

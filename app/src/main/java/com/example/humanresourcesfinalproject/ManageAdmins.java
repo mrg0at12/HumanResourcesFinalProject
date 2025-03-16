@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -31,6 +32,8 @@ public class ManageAdmins extends AppCompatActivity {
     private ArrayList<User> userObjects;
     private ArrayAdapter<String> adapter;
     private DatabaseReference usersRef, adminsRef;
+    private SearchView searchView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,11 +56,27 @@ public class ManageAdmins extends AppCompatActivity {
             }
         });
 
+        searchView = findViewById(R.id.searchViewUserAdmin);
+
+
         lvUserAdminManage = findViewById(R.id.lvUserAdminManage);
         userList = new ArrayList<>();
         userObjects = new ArrayList<>();
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, userList);
         lvUserAdminManage.setAdapter(adapter);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false; // Not needed for live filtering
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                adapter.getFilter().filter(newText);
+                return false;
+            }
+        });
 
         // Initialize Firebase references
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
