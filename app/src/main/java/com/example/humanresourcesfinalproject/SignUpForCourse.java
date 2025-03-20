@@ -15,6 +15,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.humanresourcesfinalproject.model.Course;
+import com.example.humanresourcesfinalproject.model.courseAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -69,16 +70,17 @@ public class SignUpForCourse extends AppCompatActivity {
         coursesReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                ArrayList<String> courseDetailsList = new ArrayList<>();
+
+                ArrayList<Course> courses=new ArrayList<>();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Course course = snapshot.getValue(Course.class);
                     if (course != null) {
-                        String courseDetails = formatCourseDetails(course);
-                        courseDetailsList.add(courseDetails);
+
+                        courses.add(course);
                     }
                 }
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(SignUpForCourse.this,
-                        android.R.layout.simple_list_item_1, courseDetailsList);
+                courseAdapter<Course> adapter = new courseAdapter<>(SignUpForCourse.this,
+                        0,0, courses);
                 lvCourses.setAdapter(adapter);
             }
 
