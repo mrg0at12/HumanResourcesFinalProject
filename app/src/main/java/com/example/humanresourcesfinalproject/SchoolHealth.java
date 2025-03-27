@@ -17,6 +17,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.humanresourcesfinalproject.model.User;
+import com.example.humanresourcesfinalproject.model.UserAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -29,8 +30,9 @@ import java.util.ArrayList;
 
 public class SchoolHealth extends AppCompatActivity {
     private ListView listView;
-    private ArrayAdapter<String> adapter;
-    private ArrayList<String> healthIssueList;
+    private UserAdapter userAdapter;
+    private ArrayList<User> healthIssueList;
+    private ArrayList<User> filteredList;
     private DatabaseReference databaseReference;
     private String currentUserSchool = ""; // User's school
     private FirebaseAuth auth;
@@ -59,7 +61,7 @@ public class SchoolHealth extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                adapter.getFilter().filter(newText);
+                userAdapter.getFilter().filter(newText);
                 return false;
             }
         });
@@ -68,17 +70,16 @@ public class SchoolHealth extends AppCompatActivity {
         goBackBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Go back to StartPage
                 Intent intent = new Intent(SchoolHealth.this, MyLists.class);
                 startActivity(intent);
-                finish(); // Finish the current activity (LoginActivity)
+                finish();
             }
         });
 
         listView = findViewById(R.id.healthListView);
         healthIssueList = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, healthIssueList);
-        listView.setAdapter(adapter);
+        userAdapter = new UserAdapter(this, 0, healthIssueList);
+        listView.setAdapter(userAdapter);
 
         auth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference("Users");
@@ -125,16 +126,11 @@ public class SchoolHealth extends AppCompatActivity {
                     if (user != null && user.getSchool().equals(currentUserSchool)) {
                         String healthProblems = user.getHealthProblems();
                         if (healthProblems != null && !healthProblems.equalsIgnoreCase("None") && !healthProblems.trim().isEmpty()) {
-                            String details = "👤 " + user.getFname() + " " + user.getLname() +
-                                    "\n📧 Email: " + user.getEmail() +
-                                    "\n📞 Phone: " + user.getPhone() +
-                                    "\n⚕️ Health Issues: " + healthProblems +
-                                    "\n--------------------------";
-                            healthIssueList.add(details);
+                            healthIssueList.add(user);
                         }
                     }
                 }
-                adapter.notifyDataSetChanged();
+                userAdapter.notifyDataSetChanged();
                 if (healthIssueList.isEmpty()) {
                     Toast.makeText(SchoolHealth.this, "No students with health issues found.", Toast.LENGTH_SHORT).show();
                 }

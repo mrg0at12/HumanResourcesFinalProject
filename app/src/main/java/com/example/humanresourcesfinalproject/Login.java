@@ -1,6 +1,8 @@
 package com.example.humanresourcesfinalproject;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -26,11 +28,20 @@ public class Login extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
     private DatabaseReference myUserRef, myAdminRef;
+    private String email2;
+    private String pass2;
+
+    public static final String MyPREFERENCES = "MyPrefs";
+    SharedPreferences sharedpreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        sharedpreferences=getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+
+
 
         // Initialize Firebase Auth and Database
         mAuth = FirebaseAuth.getInstance();
@@ -42,6 +53,12 @@ public class Login extends AppCompatActivity {
         etEmail = findViewById(R.id.etLoginEmail);
         etPassword = findViewById(R.id.etLoginPassword);
         btnLogin = findViewById(R.id.btnLogin);
+
+        email2=sharedpreferences.getString("email","");
+        pass2=sharedpreferences.getString("password","");
+
+        etEmail.setText(email2);
+        etPassword.setText(pass2);
 
         Button goBackBtn = findViewById(R.id.goBackLoginBtn);
         goBackBtn.setOnClickListener(v -> {
@@ -79,6 +96,12 @@ public class Login extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
                         Log.d("TAG", "signInWithEmail:success");
+
+                        SharedPreferences.Editor editor = sharedpreferences.edit();
+                        editor.putString("email", email);
+                        editor.putString("password", password);
+                        editor.apply();
+
 
                         // Check if the user exists in the "Admins" table first
                         checkIfAdminExists(user.getUid());

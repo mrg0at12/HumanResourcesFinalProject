@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.humanresourcesfinalproject.model.Admin;
 import com.example.humanresourcesfinalproject.model.User;
+import com.example.humanresourcesfinalproject.model.UserAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -31,8 +32,9 @@ import java.util.ArrayList;
 public class SchoolComp extends AppCompatActivity {
 
     private ListView listView;
-    private ArrayAdapter<String> adapter;
-    private ArrayList<String> schoolMembersList;
+    private UserAdapter userAdapter;
+
+    private ArrayList<User> schoolMembersList;
     private DatabaseReference usersRef, adminsRef;
     private String currentUserSchool = "";
     private FirebaseAuth auth;
@@ -59,7 +61,7 @@ public class SchoolComp extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                adapter.getFilter().filter(newText);
+                userAdapter.getFilter().filter(newText);
                 return false;
             }
         });
@@ -77,8 +79,8 @@ public class SchoolComp extends AppCompatActivity {
 
         listView = findViewById(R.id.schoolListView);
         schoolMembersList = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, schoolMembersList);
-        listView.setAdapter(adapter);
+       userAdapter = new UserAdapter(this, 0, schoolMembersList);
+        listView.setAdapter(userAdapter);
 
         auth = FirebaseAuth.getInstance();
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
@@ -86,17 +88,21 @@ public class SchoolComp extends AppCompatActivity {
 
         fetchCurrentUserSchool();
 
+
     }
 
     private void fetchCurrentUserSchool() {
-        FirebaseUser currentUser = auth.getCurrentUser();
-        if (currentUser != null) {
-            String userId = currentUser.getUid();
+        String userId  = auth.getCurrentUser().getUid();
+       if(userId!=null){
+
             usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     User user = snapshot.getValue(User.class);
                     if (user != null) {
+
+                        Toast.makeText(SchoolComp.this, user.getSchool(), Toast.LENGTH_LONG).show();
+
                         currentUserSchool = user.getSchool();
                         fetchSchoolMembers();
                     } else {
@@ -125,21 +131,31 @@ public class SchoolComp extends AppCompatActivity {
     }
 
     private void fetchUsers() {
+
+
         usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot data : snapshot.getChildren()) {
                     User user = data.getValue(User.class);
                     if (user != null && user.getSchool().equals(currentUserSchool)) {
-                        String details = "👤 " + user.getFname() + " " + user.getLname() +
-                                "\n📧 Email: " + user.getEmail() +
-                                "\n📞 Phone: " + user.getPhone() +
-                                "\n🏫 Role: " + getUserRole(user) +
-                                "\n--------------------------";
-                        schoolMembersList.add(details);
+
+                        schoolMembersList.add(user);
+
+                        Toast.makeText(SchoolComp.this, user.getFname(), Toast.LENGTH_LONG).show();
+
+                        //   String details = "👤 " + user.getFname() + " " + user.getLname() +
+                      //          "\n📧 Email: " + user.getEmail() +
+                      //          "\n📞 Phone: " + user.getPhone() +
+                       //         "\n🏫 Role: " + getUserRole(user) +
+                       //         "\n--------------------------";
+                       // schoolMembersList.add(details);
                     }
                 }
-                checkQueriesComplete();
+                userAdapter = new UserAdapter(SchoolComp.this, 0, schoolMembersList);
+                listView.setAdapter(userAdapter);
+
+                //checkQueriesComplete();
             }
 
             @Override
@@ -156,13 +172,14 @@ public class SchoolComp extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot data : snapshot.getChildren()) {
                     Admin admin = data.getValue(Admin.class);
+
                     if (admin != null && admin.getSchool().equals(currentUserSchool)) {
                         String details = "👑 ADMIN: " + admin.getFname() + " " + admin.getLname() +
                                 "\n📧 Email: " + admin.getEmail() +
                                 "\n📞 Phone: " + admin.getPhone() +
                                 "\n🏫 School: " + admin.getSchool() +
                                 "\n--------------------------";
-                        schoolMembersList.add(details);
+                        schoolMembersList.add(admin);
                     }
                 }
                 checkQueriesComplete();
@@ -185,7 +202,7 @@ public class SchoolComp extends AppCompatActivity {
     private void checkQueriesComplete() {
         pendingQueries--;
         if (pendingQueries == 0) {
-            adapter.notifyDataSetChanged();
+            userAdapter.notifyDataSetChanged();
             if (schoolMembersList.isEmpty()) {
                 Toast.makeText(SchoolComp.this, "No members found.", Toast.LENGTH_SHORT).show();
             }

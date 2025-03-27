@@ -17,6 +17,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.humanresourcesfinalproject.model.User;
+import com.example.humanresourcesfinalproject.model.UserAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -30,12 +31,13 @@ import java.util.ArrayList;
 public class SchoolInst extends AppCompatActivity {
 
     private ListView listView;
-    private ArrayAdapter<String> adapter;
-    private ArrayList<String> instructorList;
-    private DatabaseReference databaseReference;
-    private String currentUserSchool = ""; // Initially empty
+    private UserAdapter userAdapter;
+    private ArrayList<User> instructorList;
+    private DatabaseReference usersRef;
+    private String currentUserSchool = "";
     private FirebaseAuth auth;
     private SearchView searchView;
+    private int pendingQueries = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,52 +51,45 @@ public class SchoolInst extends AppCompatActivity {
         });
 
         searchView = findViewById(R.id.SvSchoolInst);
+        listView = findViewById(R.id.instructorListView);
+        instructorList = new ArrayList<>();
+        userAdapter = new UserAdapter(this, 0, instructorList);
+        listView.setAdapter(userAdapter);
+
+        auth = FirebaseAuth.getInstance();
+        usersRef = FirebaseDatabase.getInstance().getReference("Users");
+
+        fetchCurrentUserSchool();
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                return false; // Not needed for live filtering
+                return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                adapter.getFilter().filter(newText);
+                userAdapter.getFilter().filter(newText);
                 return false;
             }
         });
 
-        listView = findViewById(R.id.instructorListView); // ✅ Use ListView from XML
-        instructorList = new ArrayList<>();
-
-        // ✅ Use Built-in `simple_list_item_1`
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, instructorList);
-        listView.setAdapter(adapter);
-
-        auth = FirebaseAuth.getInstance();
-        databaseReference = FirebaseDatabase.getInstance().getReference("Users");
-
-        fetchCurrentUserSchool();
-
         Button goBackBtn = findViewById(R.id.btnGoBackInst);
-        goBackBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Go back to StartPage
-                Intent intent = new Intent(SchoolInst.this, MyLists.class);
-                startActivity(intent);
-                finish(); // Finish the current activity (LoginActivity)
-            }
+        goBackBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(SchoolInst.this, MyLists.class);
+            startActivity(intent);
+            finish();
         });
     }
     private void fetchCurrentUserSchool() {
-        FirebaseUser currentUser = auth.getCurrentUser();
-        if (currentUser != null) {
-            String userId = currentUser.getUid();
-            databaseReference.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+        String userId = auth.getCurrentUser().getUid();
+        if (userId != null) {
+            usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     User user = snapshot.getValue(User.class);
                     if (user != null) {
+                        Toast.makeText(SchoolInst.this, user.getSchool(), Toast.LENGTH_LONG).show();
                         currentUserSchool = user.getSchool();
                         fetchInstructors();
                     } else {
@@ -116,39 +111,41 @@ public class SchoolInst extends AppCompatActivity {
             return;
         }
 
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+        pendingQueries = 1; // We are making one query (Users)
+
+        usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                instructorList.clear();
                 for (DataSnapshot data : snapshot.getChildren()) {
                     User user = data.getValue(User.class);
                     if (user != null && user.getSchool().equals(currentUserSchool) &&
                             (Boolean.TRUE.equals(user.getIsTeacher()) || Boolean.TRUE.equals(user.getIsGuide()))) {
 
-                        // ✅ Keep the text format simple (1 line per instructor)
-                        String details = "👤 " + user.getFname() + " " + user.getLname() +
-                                "\n📧 Email: " + user.getEmail() +
-                                "\n📞 Phone: " + user.getPhone() +
-                                "\n🏫 School: " + user.getSchool() +
-                                "\n👨‍👩‍👦 Parent: " + user.getParentName() + " (" + user.getParentPhone() + ")" +
-                                "\n📆 Year: " + user.getSchoolYear() +
-                                "\n🏥 Health Fund: " + user.getHealthFund() +
-                                "\n⚕️ Health Issues: " + user.getHealthProblems() +
-                                "\n🍽️ Food Type: " + user.getFoodType() +
-                                "\n--------------------------";
-                        instructorList.add(details);
+                        instructorList.add(user);
+                        Toast.makeText(SchoolInst.this, user.getFname(), Toast.LENGTH_LONG).show();
                     }
                 }
-                adapter.notifyDataSetChanged();
-                if (instructorList.isEmpty()) {
-                    Toast.makeText(SchoolInst.this, "No instructors found.", Toast.LENGTH_SHORT).show();
-                }
+
+                userAdapter = new UserAdapter(SchoolInst.this, 0, instructorList);
+                listView.setAdapter(userAdapter);
+                checkQueriesComplete();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(SchoolInst.this, "Failed to load instructors.", Toast.LENGTH_SHORT).show();
+                checkQueriesComplete();
             }
         });
+    }
+
+    private void checkQueriesComplete() {
+        pendingQueries--;
+        if (pendingQueries == 0) {
+            userAdapter.notifyDataSetChanged();
+            if (instructorList.isEmpty()) {
+                Toast.makeText(SchoolInst.this, "No instructors found.", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }

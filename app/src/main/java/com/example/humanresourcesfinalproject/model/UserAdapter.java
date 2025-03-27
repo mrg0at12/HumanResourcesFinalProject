@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Filter;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -12,17 +13,20 @@ import androidx.annotation.Nullable;
 
 import com.example.humanresourcesfinalproject.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserAdapter extends ArrayAdapter<User> {
 
     private final Context context;
-    private final List<User> userList;
+    private List<User> userList;
+    private List<User> filteredUserList;
 
     public UserAdapter(@NonNull Context context, int resource, @NonNull List<User> objects) {
-        super(context, resource, objects);
+        super(context, 0, objects);
         this.context = context;
-        this.userList = objects;
+        this.userList = new ArrayList<>(objects); // Keep a copy of original list
+        this.filteredUserList = new ArrayList<>(objects);
     }
 
     @NonNull
@@ -44,7 +48,7 @@ public class UserAdapter extends ArrayAdapter<User> {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        User user = userList.get(position);
+        User user = filteredUserList.get(position);
 
         // Set values to views with emojis 🚀
         holder.rowUserName.setText("👤 " + user.getFname() + " " + user.getLname());
@@ -52,6 +56,55 @@ public class UserAdapter extends ArrayAdapter<User> {
         holder.rowUserID.setText("🆔 " + user.getKidId());
 
         return convertView;
+    }
+
+    @Override
+    public int getCount() {
+        return filteredUserList.size();
+    }
+
+    @Nullable
+    @Override
+    public User getItem(int position) {
+        return filteredUserList.get(position);
+    }
+
+    // Implement the filter logic
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                FilterResults results = new FilterResults();
+                List<User> filteredList = new ArrayList<>();
+
+                if (constraint == null || constraint.length() == 0) {
+                    filteredList.addAll(userList); // Show all users when query is empty
+                } else {
+                    String filterPattern = constraint.toString().toLowerCase().trim();
+
+                    for (User user : userList) {
+                        if (user.getFname().toLowerCase().contains(filterPattern) ||
+                                user.getLname().toLowerCase().contains(filterPattern) ||
+                                user.getPhone().contains(filterPattern) ||
+                                user.getKidId().contains(filterPattern)) {
+                            filteredList.add(user);
+                        }
+                    }
+                }
+
+                results.values = filteredList;
+                results.count = filteredList.size();
+                return results;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                filteredUserList.clear();
+                filteredUserList.addAll((List<User>) results.values);
+                notifyDataSetChanged();
+            }
+        };
     }
 
     static class ViewHolder {
