@@ -1,6 +1,7 @@
 package com.example.humanresourcesfinalproject.model;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.humanresourcesfinalproject.R;
+import com.example.humanresourcesfinalproject.UserInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +27,8 @@ public class UserAdapter extends ArrayAdapter<User> {
     public UserAdapter(@NonNull Context context, int resource, @NonNull List<User> objects) {
         super(context, 0, objects);
         this.context = context;
-        this.userList = new ArrayList<>(objects); // Keep a copy of original list
-        this.filteredUserList = new ArrayList<>(objects);
+        this.userList = new ArrayList<>(objects); // Original list
+        this.filteredUserList = new ArrayList<>(objects); // Filtered list
     }
 
     @NonNull
@@ -50,10 +52,17 @@ public class UserAdapter extends ArrayAdapter<User> {
 
         User user = filteredUserList.get(position);
 
-        // Set values to views with emojis 🚀
+        // Display user details with emojis
         holder.rowUserName.setText("👤 " + user.getFname() + " " + user.getLname());
         holder.rowUserPhone.setText("📞 " + user.getPhone());
         holder.rowUserID.setText("🆔 " + user.getKidId());
+
+        // Row click → open UserInfo
+        convertView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, UserInfo.class);
+            intent.putExtra("userId", user.getId()); // Passing user ID to the next screen
+            context.startActivity(intent);
+        });
 
         return convertView;
     }
@@ -69,7 +78,6 @@ public class UserAdapter extends ArrayAdapter<User> {
         return filteredUserList.get(position);
     }
 
-    // Implement the filter logic
     @Override
     public Filter getFilter() {
         return new Filter() {
@@ -79,7 +87,7 @@ public class UserAdapter extends ArrayAdapter<User> {
                 List<User> filteredList = new ArrayList<>();
 
                 if (constraint == null || constraint.length() == 0) {
-                    filteredList.addAll(userList); // Show all users when query is empty
+                    filteredList.addAll(userList);
                 } else {
                     String filterPattern = constraint.toString().toLowerCase().trim();
 
