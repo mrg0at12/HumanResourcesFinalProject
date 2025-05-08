@@ -1,6 +1,8 @@
 package com.example.humanresourcesfinalproject;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -19,7 +21,7 @@ import com.google.firebase.database.ValueEventListener;
 public class UserInfo extends AppCompatActivity {
 
     TextView userInfoText;
-
+    private Button goBackButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,8 +33,29 @@ public class UserInfo extends AppCompatActivity {
             return insets;
         });
 
+        goBackButton = findViewById(R.id.GoBackUserInfo);
 
-        userInfoText = findViewById(R.id.tvUserInfo);
+        // Set click listener for the button
+        goBackButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // This will navigate back to the previous activity in the stack
+                onBackPressed();
+            }
+        });
+        TextView tvKidId = findViewById(R.id.tvKidId);
+        TextView tvName = findViewById(R.id.tvName);
+        TextView tvPhone = findViewById(R.id.tvPhone);
+        TextView tvEmail = findViewById(R.id.tvEmail);
+        TextView tvSchool = findViewById(R.id.tvSchool);
+        TextView tvSchoolYear = findViewById(R.id.tvSchoolYear);
+        TextView tvParentName = findViewById(R.id.tvParentName);
+        TextView tvParentPhone = findViewById(R.id.tvParentPhone);
+        TextView tvHealthFund = findViewById(R.id.tvHealthFund);
+        TextView tvHealthProblems = findViewById(R.id.tvHealthProblems);
+        TextView tvFoodType = findViewById(R.id.tvFoodType);
+        TextView tvTeacher = findViewById(R.id.tvTeacher);
+        TextView tvGuide = findViewById(R.id.tvGuide);
 
         String userId = getIntent().getStringExtra("userId");
         if (userId != null) {
@@ -43,11 +66,17 @@ public class UserInfo extends AppCompatActivity {
                             User user = snapshot.getValue(User.class);
                             if (user != null) {
 
+                                String kidId="Id: "+user.getKidId();
                                 String Name="Name: "+user.getFname() + " " + user.getLname();
-                                String Phone="Phone: "+ user.getPhone();
+                                String Phone="Phone number: "+ user.getPhone();
                                 String Email="Email: "+user.getEmail();
                                 String School="School: "+user.getSchool();
                                 String ParentName= "Parent Name: "+ user.getParentName();
+                                String ParentPhone="Parent phone number:"+user.getParentPhone();
+                                String schoolYear="Grade:"+user.getSchoolYear();
+                                String HealthFund="Health fund"+user.getHealthFund();
+                                String HealthProblems="Health problems: "+user.getHealthProblems();
+                                String FoodType="Food type:"+user.getFoodType();
 
                                 String Techer;
                                 if(user.getIsTeacher()==true)
@@ -55,7 +84,7 @@ public class UserInfo extends AppCompatActivity {
                                     Techer="Teacher: This user is a teacher";
                                 }
                                 else {
-                                    Techer="Techer: This user is not a teacher";
+                                    Techer="Teacher: This user is not a teacher";
                                 }
 
                                 String Guide;
@@ -66,11 +95,21 @@ public class UserInfo extends AppCompatActivity {
                                 else {
                                     Guide="Guide: This user is not a guide";
                                 }
-                                String KidId="Kid ID: "+user.getKidId();
-                                String schoolYear="School Year: "+user.getSchoolYear();
-                                String HealthFund="Health Fund: "+user.getHealthFund();
-                                String HealthProblems="Health Problems: "+user.getHealthProblems();
-                                String Courses="Enrolled Courses: "+user.getEnrolledCourses();
+
+                                tvKidId.setText(kidId);
+                                tvName.setText(Name);
+                                tvPhone.setText(Phone);
+                                tvEmail.setText(Email);
+                                tvSchool.setText(School);
+                                tvSchoolYear.setText(schoolYear);
+                                tvParentName.setText(ParentName);
+                                tvParentPhone.setText(ParentPhone);
+                                tvHealthFund.setText(HealthFund);
+                                tvHealthProblems.setText(HealthProblems);
+                                tvFoodType.setText(FoodType);
+                                tvTeacher.setText(Techer);
+                                tvGuide.setText(Guide);
+
 
                             }
                         }
@@ -80,6 +119,8 @@ public class UserInfo extends AppCompatActivity {
                             userInfoText.setText("Failed to load user info.");
                         }
                     });
+
+
         }
 
     }

@@ -1,6 +1,11 @@
 package com.example.humanresourcesfinalproject;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -9,13 +14,16 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.humanresourcesfinalproject.model.Course;
 import com.example.humanresourcesfinalproject.model.Enroll;
+import com.example.humanresourcesfinalproject.model.NotificationReceiver;
 import com.example.humanresourcesfinalproject.model.User;
 import com.example.humanresourcesfinalproject.model.courseAdapter;
 import com.google.firebase.auth.FirebaseAuth;
@@ -31,12 +39,14 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 public class SignUpForCourse extends AppCompatActivity {
+    private static final int NOTIFICATION_PERMISSION_CODE = 101;
+
     private Button goBack;
     private ListView lvCourses;
-    private DatabaseReference coursesReference, userReference,enrollUsersReference,enrollCoursesReference;
+    private DatabaseReference coursesReference, userReference, enrollUsersReference, enrollCoursesReference;
     private FirebaseUser currentUser;
     private ArrayList<String> courseIds;
-    private User user=null;
+    private User user = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,13 +61,15 @@ public class SignUpForCourse extends AppCompatActivity {
         goBack = findViewById(R.id.GoBackSignUpCourseBtn);
         lvCourses = findViewById(R.id.LVcourse);
 
+        requestNotificationPermission(); // Runtime permission for Android 13+
+
         coursesReference = FirebaseDatabase.getInstance().getReference("courses");
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         enrollUsersReference = FirebaseDatabase.getInstance().getReference("EnrollForUsers").push();
         enrollCoursesReference = FirebaseDatabase.getInstance().getReference("EnrollCourses");
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        courseIds = new ArrayList<>();  // Initialize course ID list
+        courseIds = new ArrayList<>();
         getCoursesFromFirebase();
 
         goBack.setOnClickListener(v -> {
@@ -65,40 +77,36 @@ public class SignUpForCourse extends AppCompatActivity {
             finish();
         });
 
-        String userId = currentUser.getUid();
-        userReference.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-
-                    user = snapshot.getValue(User.class);
-                    Boolean isAdmin = snapshot.child("isAdmin").getValue(Boolean.class);
-
+        if (currentUser != null) {
+            String userId = currentUser.getUid();
+            userReference.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        user = snapshot.getValue(User.class);
+                    }
                 }
 
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                Toast.makeText(SignUpForCourse.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(SignUpForCourse.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
-
-
 
     private void getCoursesFromFirebase() {
         coursesReference.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 ArrayList<Course> courses = new ArrayList<>();
-                courseIds.clear();  // Clear previous data
+                courseIds.clear();
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Course course = snapshot.getValue(Course.class);
                     if (course != null) {
                         courses.add(course);
-                        courseIds.add(snapshot.getKey());  // Store Firebase Course ID
+                        courseIds.add(snapshot.getKey());
                     }
                 }
 
@@ -106,52 +114,64 @@ public class SignUpForCourse extends AppCompatActivity {
                 lvCourses.setAdapter(adapter);
 
                 lvCourses.setOnItemClickListener((parent, view, position, id) -> {
-                    String selectedCourseId = courseIds.get(position);
+                    if (user == null) {
+                        Toast.makeText(SignUpForCourse.this, "User info not loaded", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
 
-                    Course course= (Course) parent.getItemAtPosition(position);
-                    Enroll newEnroll=new Enroll(enrollUsersReference.getKey(),user.getId(),course);
+                    Course course = (Course) parent.getItemAtPosition(position);
+                    String courseId = course.getCourseId();
+
+                    Enroll newEnroll = new Enroll(enrollUsersReference.getKey(), user.getId(), course);
                     enrollUsersReference.child(user.getId()).setValue(newEnroll);
+                    enrollCoursesReference.child(courseId).child(user.getId()).setValue(user);
 
-                    enrollCoursesReference.child(course.getCourseId()).child(user.getId()).setValue(user);
+                    scheduleNotification(user.getFname(), course.getCourseName());
+                    Toast.makeText(SignUpForCourse.this, "Signed up for course: " + course.getCourseName(), Toast.LENGTH_SHORT).show();
                 });
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
+            public void onCancelled(@NonNull DatabaseError databaseError) {
                 Toast.makeText(SignUpForCourse.this, "Failed to load courses", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void assignUserToCourse(Course course) {
-        if (currentUser == null) {
-            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
-            return;
+    private void scheduleNotification(String username, String courseName) {
+        Intent intent = new Intent(SignUpForCourse.this, NotificationReceiver.class);
+        intent.putExtra("username", username);
+        intent.putExtra("courseName", courseName);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                SignUpForCourse.this, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        long triggerTime = System.currentTimeMillis() + 5000; // 5 seconds delay
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        if (alarmManager != null) {
+            alarmManager.set(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
         }
-
-
-
-
     }
 
-    private void assignAdminToCourse(String userId, String courseId) {
-        DatabaseReference adminCoursesRef = FirebaseDatabase.getInstance().getReference("Admins").child(userId).child("adminCourses");
-        adminCoursesRef.orderByValue().equalTo(courseId).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    Toast.makeText(SignUpForCourse.this, "Already assigned to this course", Toast.LENGTH_SHORT).show();
-                } else {
-                    adminCoursesRef.push().setValue(courseId)
-                            .addOnSuccessListener(aVoid -> Toast.makeText(SignUpForCourse.this, "Admin successfully assigned to course", Toast.LENGTH_SHORT).show())
-                            .addOnFailureListener(e -> Toast.makeText(SignUpForCourse.this, "Failed to assign admin to course", Toast.LENGTH_SHORT).show());
-                }
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATION_PERMISSION_CODE);
             }
+        }
+    }
 
-            @Override
-            public void onCancelled(DatabaseError error) {
-                Toast.makeText(SignUpForCourse.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == NOTIFICATION_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Notifications enabled", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show();
             }
-        });
+        }
     }
 }

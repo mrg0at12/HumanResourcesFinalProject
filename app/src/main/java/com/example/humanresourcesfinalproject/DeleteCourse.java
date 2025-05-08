@@ -15,6 +15,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.humanresourcesfinalproject.model.Course;
+import com.example.humanresourcesfinalproject.model.courseAdapter;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -26,7 +27,7 @@ import java.util.List;
 
 public class DeleteCourse extends AppCompatActivity {
     private ListView listView;
-    private ArrayAdapter<String> adapter;
+    private courseAdapter<Course> adapter;
     private List<Course> courses;
     private List<String> courseKeys; // Stores Firebase keys for deletion
     private DatabaseReference dbRef;
@@ -72,7 +73,6 @@ public class DeleteCourse extends AppCompatActivity {
             public void onDataChange(DataSnapshot snapshot) {
                 courses.clear();
                 courseKeys.clear();
-                List<String> courseNames = new ArrayList<>();
 
                 for (DataSnapshot courseSnapshot : snapshot.getChildren()) {
                     Course course = courseSnapshot.getValue(Course.class);
@@ -81,11 +81,16 @@ public class DeleteCourse extends AppCompatActivity {
                     if (course != null) {
                         courses.add(course);
                         courseKeys.add(key);
-                        courseNames.add(course.getCourseName());
                     }
                 }
 
-                adapter = new ArrayAdapter<>(DeleteCourse.this, android.R.layout.simple_list_item_1, courseNames);
+                // Use the custom courseAdapter
+                adapter = new courseAdapter<>(
+                        DeleteCourse.this,
+                        R.layout.courserow,
+                        R.id.tvCourseName,
+                        courses
+                );
                 listView.setAdapter(adapter);
             }
 
@@ -95,6 +100,7 @@ public class DeleteCourse extends AppCompatActivity {
             }
         });
     }
+
     private void deleteCourse(int position) {
         String selectedCourseName = courses.get(position).getCourseName();
 
