@@ -2,6 +2,8 @@ package com.example.humanresourcesfinalproject;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
@@ -23,9 +25,17 @@ public class StartPage extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+
+
+
         Button startLoginBtn = findViewById(R.id.StartLoginBtn);
         Button startRegisterBtn = findViewById(R.id.StartRegisterBtn);
         Button startAboutBtn = findViewById(R.id.StartAboutBtn);
+
+
+
+
 
         startLoginBtn.setOnClickListener(v -> {
             Intent intent = new Intent(StartPage.this, Login.class);

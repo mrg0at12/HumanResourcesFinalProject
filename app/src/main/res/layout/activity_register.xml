@@ -24,6 +24,14 @@
         </ImageView>
 
         <!-- First Name -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Register"
+            android:textSize="40dp"
+            android:gravity="center"
+            android:layout_gravity="center" />
+
         <EditText
             android:id="@+id/etFname"
             android:layout_width="match_parent"

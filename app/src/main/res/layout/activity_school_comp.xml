@@ -8,38 +8,41 @@
     android:background="#F5E7CF"
     tools:context=".SchoolComp">
 
+
     <ImageView
         android:id="@+id/imageView6"
-        android:layout_width="270dp"
+        android:layout_width="213dp"
         android:layout_height="0dp"
-        android:layout_marginEnd="60dp"
-        android:layout_marginBottom="12dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="26dp"
         app:layout_constraintBottom_toTopOf="@+id/tvSchoolComp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/logo" />
-
 
     <TextView
         android:id="@+id/tvSchoolComp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="28dp"
         android:text="comprehensive list"
         android:textSize="30dp"
         app:layout_constraintBottom_toTopOf="@+id/SvSchoolComp"
-        app:layout_constraintEnd_toEndOf="@+id/imageView6"
-        app:layout_constraintTop_toBottomOf="@+id/imageView6" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/GoBackCompSchool" />
 
     <Button
         android:id="@+id/GoBackCompSchool"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="26dp"
-        android:layout_marginEnd="14dp"
+        android:layout_marginEnd="13dp"
+        android:layout_marginBottom="105dp"
         android:backgroundTint="#3c3d37"
         android:text="Go Back"
+        app:layout_constraintBottom_toTopOf="@+id/tvSchoolComp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -48,24 +51,25 @@
         android:id="@+id/SvSchoolComp"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="420dp"
+        android:layout_marginBottom="70dp"
         android:iconifiedByDefault="false"
         android:queryHint="Search user by name"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/schoolListView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvSchoolComp" />
 
     <ListView
         android:id="@+id/schoolListView"
-        android:layout_width="373dp"
-        android:layout_height="288dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="78dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.421"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvSchoolComp"
-        app:layout_constraintVertical_bias="0.644" />
+        app:layout_constraintTop_toBottomOf="@+id/SvSchoolComp" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
