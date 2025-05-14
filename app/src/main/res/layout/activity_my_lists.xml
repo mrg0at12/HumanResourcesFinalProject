@@ -1,154 +1,165 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5E7CF"
     tools:context=".MyLists">
 
-    <Button
-        android:id="@+id/btnEntireSchool2"
+    <!-- Main Content -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F5E7CF">
+
+        <!-- Toolbar -->
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginBottom="69dp"
+            android:background="#F5E7CF"
+            app:layout_constraintBottom_toTopOf="@+id/tvTitle1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:title="My Lists"
+            app:titleTextColor="#F5E7CF" />
+
+        <Button
+            android:id="@+id/btnEntireSchool2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="22dp"
+            android:layout_marginBottom="22dp"
+            android:backgroundTint="#3c3d37"
+            android:text="comprehensive list"
+            app:layout_constraintBottom_toTopOf="@+id/btnHealthReportSchool"
+            app:layout_constraintStart_toStartOf="@+id/tvTitle2"
+            app:layout_constraintTop_toBottomOf="@+id/tvTitle2" />
+
+        <Button
+            android:id="@+id/btnInstroucturs2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginBottom="20dp"
+            android:backgroundTint="#3c3d37"
+            android:text="instructors and teachers"
+            app:layout_constraintBottom_toTopOf="@+id/tvTitle2"
+            app:layout_constraintStart_toStartOf="@+id/tvTitle2"
+            app:layout_constraintTop_toBottomOf="@+id/CourseHealthReport" />
+
+        <Button
+            android:id="@+id/btnInstroucturs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="30dp"
+            android:backgroundTint="#3c3d37"
+            android:text="instructors and teachers"
+            app:layout_constraintBottom_toTopOf="@+id/GoBackMyLists"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnHealthReportSchool" />
+
+        <Button
+            android:id="@+id/GoBackMyLists"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#3c3d37"
+            android:text="Go Back"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageView" />
+
+        <Button
+            android:id="@+id/btnHealthReportSchool"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:layout_marginBottom="27dp"
+            android:backgroundTint="#3c3d37"
+            android:text="Health report"
+            app:layout_constraintBottom_toTopOf="@+id/btnInstroucturs"
+            app:layout_constraintStart_toStartOf="@+id/btnEntireSchool2"
+            app:layout_constraintTop_toBottomOf="@+id/btnEntireSchool2" />
+
+        <Button
+            android:id="@+id/btnEntireSchool"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="14dp"
+            android:layout_marginBottom="27dp"
+            android:backgroundTint="#3c3d37"
+            android:text="comprehensive list"
+            app:layout_constraintBottom_toTopOf="@+id/CourseHealthReport"
+            app:layout_constraintEnd_toEndOf="@+id/tvTitle1"
+            app:layout_constraintTop_toBottomOf="@+id/tvTitle1" />
+
+
+        <TextView
+            android:id="@+id/tvTitle1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginBottom="18dp"
+            android:backgroundTint="#3c3d37"
+            android:text="Your course related list"
+            android:textSize="20dp"
+            app:layout_constraintBottom_toTopOf="@+id/btnEntireSchool"
+            app:layout_constraintStart_toStartOf="@+id/imageView"
+            app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+        <Button
+            android:id="@+id/CourseHealthReport"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="17dp"
+            android:layout_marginBottom="25dp"
+            android:backgroundTint="#3c3d37"
+            android:text="Health report"
+            app:layout_constraintBottom_toTopOf="@+id/btnInstroucturs2"
+            app:layout_constraintStart_toStartOf="@+id/btnEntireSchool"
+            app:layout_constraintTop_toBottomOf="@+id/btnEntireSchool" />
+
+        <TextView
+            android:id="@+id/tvTitle2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="23dp"
+            android:backgroundTint="#3c3d37"
+            android:text="your school related lists"
+            android:textSize="20dp"
+            app:layout_constraintBottom_toTopOf="@+id/btnEntireSchool2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnInstroucturs2" />
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="236dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="56dp"
+            android:layout_marginBottom="521dp"
+            app:layout_constraintBottom_toTopOf="@+id/GoBackMyLists"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/logo" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Navigation Drawer with updated references -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="22dp"
-        android:layout_marginBottom="8dp"
-        android:backgroundTint="#3c3d37"
-        android:text="comprehensive list"
-        app:layout_constraintBottom_toTopOf="@+id/btnHealthReportSchool"
-        app:layout_constraintStart_toStartOf="@+id/tvTitle2"
-        app:layout_constraintTop_toBottomOf="@+id/tvTitle2" />
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:menu="@menu/my_lists_drawer_menu"
+        app:headerLayout="@layout/my_lists_nav_header" />
 
-    <Button
-        android:id="@+id/btnInstroucturs2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="25dp"
-        android:layout_marginBottom="6dp"
-        android:backgroundTint="#3c3d37"
-        android:text="instructors"
-        app:layout_constraintBottom_toTopOf="@+id/tvTitle2"
-        app:layout_constraintEnd_toEndOf="@+id/btnBusses"
-        app:layout_constraintTop_toBottomOf="@+id/btnBusses" />
-
-    <Button
-        android:id="@+id/btnInstroucturs"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="5dp"
-        android:layout_marginBottom="3dp"
-        android:backgroundTint="#3c3d37"
-        android:text="instructors"
-        app:layout_constraintBottom_toTopOf="@+id/GoBackMyLists"
-        app:layout_constraintEnd_toEndOf="@+id/btnHealthReportSchool"
-        app:layout_constraintTop_toBottomOf="@+id/btnHealthReportSchool" />
-
-    <Button
-        android:id="@+id/GoBackMyLists"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginBottom="16dp"
-        android:backgroundTint="#3c3d37"
-        android:text="Go Back"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/btnInstroucturs"
-        app:layout_constraintTop_toBottomOf="@+id/btnInstroucturs" />
-
-    <Button
-        android:id="@+id/btnHealthReportSchool"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:backgroundTint="#3c3d37"
-        android:text="Health report"
-        app:layout_constraintBottom_toTopOf="@+id/btnInstroucturs"
-        app:layout_constraintStart_toStartOf="@+id/btnEntireSchool2"
-        app:layout_constraintTop_toBottomOf="@+id/btnEntireSchool2" />
-
-    <Button
-        android:id="@+id/btnEntireSchool"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="15dp"
-        android:layout_marginBottom="14dp"
-        android:backgroundTint="#3c3d37"
-        android:text="comprehensive list"
-        app:layout_constraintBottom_toTopOf="@+id/btnGroups"
-        app:layout_constraintEnd_toEndOf="@+id/tvTitle1"
-        app:layout_constraintTop_toBottomOf="@+id/imageView" />
-
-    <Button
-        android:id="@+id/btnGroups"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="10dp"
-        android:backgroundTint="#3c3d37"
-        android:text="Groups"
-        app:layout_constraintBottom_toTopOf="@+id/CourseHealthReport"
-        app:layout_constraintStart_toStartOf="@+id/CourseHealthReport"
-        app:layout_constraintTop_toBottomOf="@+id/btnEntireSchool" />
-
-    <Button
-        android:id="@+id/btnBusses"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="22dp"
-        android:layout_marginBottom="7dp"
-        android:backgroundTint="#3c3d37"
-        android:text="Division into buses"
-        app:layout_constraintBottom_toTopOf="@+id/btnInstroucturs2"
-        app:layout_constraintStart_toStartOf="@+id/tvTitle2"
-        app:layout_constraintTop_toBottomOf="@+id/CourseHealthReport" />
-
-    <TextView
-        android:id="@+id/tvTitle1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:backgroundTint="#3c3d37"
-        android:text="Your course related list"
-        android:textSize="20dp"
-        app:layout_constraintBottom_toBottomOf="@+id/imageView"
-        app:layout_constraintStart_toStartOf="@+id/imageView"
-        app:layout_constraintTop_toBottomOf="@+id/imageView" />
-
-    <Button
-        android:id="@+id/CourseHealthReport"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="18dp"
-        android:layout_marginBottom="7dp"
-        android:backgroundTint="#3c3d37"
-        android:text="Health report"
-        app:layout_constraintBottom_toTopOf="@+id/btnBusses"
-        app:layout_constraintStart_toStartOf="@+id/btnBusses"
-        app:layout_constraintTop_toBottomOf="@+id/btnGroups" />
-
-    <TextView
-        android:id="@+id/tvTitle2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        android:backgroundTint="#3c3d37"
-        android:text="your school related lists"
-        android:textSize="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/btnEntireSchool2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnInstroucturs2" />
-
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="236dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="32dp"
-        app:layout_constraintBottom_toTopOf="@+id/btnEntireSchool"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/logo" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.drawerlayout.widget.DrawerLayout>

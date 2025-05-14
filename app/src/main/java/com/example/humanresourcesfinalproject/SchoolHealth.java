@@ -2,6 +2,7 @@ package com.example.humanresourcesfinalproject;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -11,13 +12,18 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
+import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.humanresourcesfinalproject.model.User;
 import com.example.humanresourcesfinalproject.model.UserAdapter;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -28,7 +34,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
-public class SchoolHealth extends AppCompatActivity {
+public class SchoolHealth extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener{
     private ListView listView;
     private UserAdapter userAdapter;
     private ArrayList<User> healthIssueList;
@@ -38,7 +44,7 @@ public class SchoolHealth extends AppCompatActivity {
     private FirebaseAuth auth;
     private SearchView searchView;
 
-
+    private DrawerLayout drawerLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,7 +56,18 @@ public class SchoolHealth extends AppCompatActivity {
             return insets;
         });
 
+        // Set up toolbar and drawer
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
+        drawerLayout = findViewById(R.id.drawer_layout);
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
 
         searchView = findViewById(R.id.SvSchoolHealth);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -86,7 +103,40 @@ public class SchoolHealth extends AppCompatActivity {
 
         fetchCurrentUserSchool();
     }
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
 
+        if (id == R.id.nav_course_comprehensive) {
+            Intent intent = new Intent(this, CourseCompList.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_course_health) {
+            Toast.makeText(this, "Course Health Report selected", Toast.LENGTH_SHORT).show();
+        } else if (id == R.id.nav_CourseInst) {
+            Toast.makeText(this, "Course instructors and teachers selected", Toast.LENGTH_SHORT).show();
+        } else if (id == R.id.nav_school_comprehensive) {
+            Intent intent = new Intent(this, SchoolComp.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_instructors) {
+            Intent intent = new Intent(this, SchoolInst.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_school_health) {
+            // Already in this activity
+            drawerLayout.closeDrawer(GravityCompat.START);
+        }
+
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
     private void fetchCurrentUserSchool() {
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser != null) {

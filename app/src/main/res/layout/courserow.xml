@@ -31,8 +31,8 @@
         android:id="@+id/tvenddaterow"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="140dp"
-        android:layout_marginTop="45dp"
+        android:layout_marginStart="284dp"
+        android:layout_marginTop="48dp"
         android:text="TextView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -51,10 +51,10 @@
         android:id="@+id/tvPriceForTeacher"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="212dp"
+        android:layout_marginEnd="68dp"
         android:text="TextView"
         app:layout_constraintBottom_toBottomOf="@+id/tvPriceForPupil"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/tvPriceForPupil"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="1.0" />
 </androidx.constraintlayout.widget.ConstraintLayout>
