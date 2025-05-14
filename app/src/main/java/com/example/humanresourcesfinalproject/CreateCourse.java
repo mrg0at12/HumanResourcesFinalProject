@@ -2,6 +2,7 @@ package com.example.humanresourcesfinalproject;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CalendarView;
@@ -9,12 +10,18 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
+import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.humanresourcesfinalproject.model.Course;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -24,12 +31,13 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 
-public class CreateCourse extends AppCompatActivity {
+public class CreateCourse extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private EditText etCourseName, etPriceForPupil, etPriceForTeacher;
     private CalendarView calendarViewStart, calendarViewEnd;
     private Button btnSave;
     private DatabaseReference databaseReference;
+    private DrawerLayout drawerLayout;
 
     private Date startDate, endDate;
     @Override
@@ -45,6 +53,17 @@ public class CreateCourse extends AppCompatActivity {
 
         databaseReference = FirebaseDatabase.getInstance().getReference("courses");
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        drawerLayout = findViewById(R.id.drawer_layout);
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
 
         Button btnGoBack = findViewById(R.id.btnGobackCreateCouse);
         btnGoBack.setOnClickListener(new View.OnClickListener() {
@@ -139,5 +158,30 @@ public class CreateCourse extends AppCompatActivity {
                     finish();
                 })
                 .addOnFailureListener(e -> Toast.makeText(CreateCourse.this, "Failed to Save", Toast.LENGTH_SHORT).show());
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.nav_create_course) {
+            // Already here, no action
+        } else if (id == R.id.nav_delete_course) {
+            startActivity(new Intent(this, DeleteCourse.class));
+        } else if (id == R.id.nav_manage_admins) {
+            startActivity(new Intent(this, ManageAdmins.class));
+        }
+
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
     }
 }

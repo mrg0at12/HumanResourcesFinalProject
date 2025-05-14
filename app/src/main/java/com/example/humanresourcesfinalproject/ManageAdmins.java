@@ -2,6 +2,7 @@ package com.example.humanresourcesfinalproject;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -10,14 +11,20 @@ import android.widget.SearchView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
+import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.humanresourcesfinalproject.model.Admin;
 import com.example.humanresourcesfinalproject.model.User;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -26,13 +33,14 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
-public class ManageAdmins extends AppCompatActivity {
+public class ManageAdmins extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private ListView lvUserAdminManage;
     private ArrayList<String> userList;
     private ArrayList<User> userObjects;
     private ArrayAdapter<String> adapter;
     private DatabaseReference usersRef, adminsRef;
     private SearchView searchView;
+    private DrawerLayout drawerLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +52,19 @@ public class ManageAdmins extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // Set up the toolbar and drawer
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        drawerLayout = findViewById(R.id.drawer_layout);
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
 
         Button goBackBtn = findViewById(R.id.btngoBackManageAdmin);
         goBackBtn.setOnClickListener(new View.OnClickListener() {
@@ -57,7 +78,6 @@ public class ManageAdmins extends AppCompatActivity {
         });
 
         searchView = findViewById(R.id.searchViewUserAdmin);
-
 
         lvUserAdminManage = findViewById(R.id.lvUserAdminManage);
         userList = new ArrayList<>();
@@ -91,6 +111,7 @@ public class ManageAdmins extends AppCompatActivity {
             return true;
         });
     }
+
     private void fetchUsers() {
         usersRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -148,5 +169,30 @@ public class ManageAdmins extends AppCompatActivity {
                             .addOnFailureListener(e -> Toast.makeText(ManageAdmins.this, "Failed to remove from Users", Toast.LENGTH_SHORT).show());
                 })
                 .addOnFailureListener(e -> Toast.makeText(ManageAdmins.this, "Failed to promote user", Toast.LENGTH_SHORT).show());
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.nav_create_course) {
+            startActivity(new Intent(this, CreateCourse.class));
+        } else if (id == R.id.nav_delete_course) {
+            startActivity(new Intent(this, DeleteCourse.class));
+        } else if (id == R.id.nav_manage_admins) {
+            // We're already here, so do nothing
+        }
+
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
     }
 }

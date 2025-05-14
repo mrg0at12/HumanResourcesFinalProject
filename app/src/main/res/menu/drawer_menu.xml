@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_create_course"
+        android:title="Create Course" />
+    <item
+        android:id="@+id/nav_delete_course"
+        android:title="Delete Course" />
+    <item
+        android:id="@+id/nav_manage_admins"
+        android:title="Manage Admins" />
+</menu>

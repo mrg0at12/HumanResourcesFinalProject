@@ -1,134 +1,173 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#EFE0CA"
-    tools:context=".CreateCourse">
+    android:layout_height="match_parent">
 
+    <!-- Main content -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#EFE0CA">
 
-    <EditText
-        android:id="@+id/etPricforT"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="9dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="9dp"
-        android:layout_marginBottom="22dp"
-        android:ems="10"
-        android:hint="price for teacher"
-        android:inputType="text"
-        android:text=""
-        app:layout_constraintBottom_toTopOf="@+id/doneCreateCourse"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/etPriceForp" />
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="0dp"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:title="Create Course"
+            android:backgroundTint="#EFE0CA"
+            app:titleTextColor="#EFE0CA" />
 
-    <EditText
-        android:id="@+id/etPriceForp"
-        android:layout_width="387dp"
-        android:layout_height="42dp"
-        android:layout_marginBottom="138dp"
-        android:ems="10"
-        android:hint="Price for pupil"
-        android:inputType="text"
-        android:text=""
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/calendarView"
-        app:layout_constraintStart_toEndOf="@+id/calendarView" />
+        <EditText
+            android:id="@+id/etPricforT"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_marginStart="9dp"
+            android:layout_marginEnd="9dp"
+            android:layout_marginBottom="21dp"
+            android:ems="10"
+            android:hint="price for teacher"
+            android:inputType="text"
+            android:text=""
+            app:layout_constraintBottom_toTopOf="@+id/doneCreateCourse"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
-    <CalendarView
-        android:id="@+id/calendarView2"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="1dp"
-        android:layout_marginEnd="11dp"
-        android:layout_marginBottom="1dp"
-        app:layout_constraintBottom_toTopOf="@+id/etPriceForp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/calendarView"
-        app:layout_constraintTop_toBottomOf="@+id/tvenddate" />
+        <EditText
+            android:id="@+id/etPriceForp"
+            android:layout_width="387dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="1dp"
+            android:layout_marginBottom="12dp"
+            android:ems="10"
+            android:hint="Price for pupil"
+            android:inputType="text"
+            android:text=""
+            app:layout_constraintBottom_toTopOf="@+id/etPricforT"
+            app:layout_constraintEnd_toEndOf="@+id/calendarView"
+            app:layout_constraintStart_toEndOf="@+id/calendarView"
+            app:layout_constraintTop_toBottomOf="@+id/calendarView2" />
 
-    <ImageView
-        android:id="@+id/imageView7"
-        android:layout_width="238dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="3dp"
-        android:layout_marginBottom="6dp"
-        app:layout_constraintBottom_toTopOf="@+id/etCourseName"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/logo" />
+        <CalendarView
+            android:id="@+id/calendarView2"
+            android:layout_width="0dp"
+            android:layout_height="277dp"
+            android:layout_marginTop="98dp"
+            android:layout_marginEnd="11dp"
+            android:layout_marginBottom="97dp"
+            app:layout_constraintBottom_toBottomOf="@+id/etPricforT"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/calendarView"
+            app:layout_constraintTop_toBottomOf="@+id/imageView7" />
 
-    <Button
-        android:id="@+id/btnGobackCreateCouse"
+        <ImageView
+            android:id="@+id/imageView7"
+            android:layout_width="0dp"
+            android:layout_height="108dp"
+            android:layout_marginEnd="132dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnGobackCreateCouse"
+            app:layout_constraintTop_toTopOf="@+id/btnGobackCreateCouse"
+            app:srcCompat="@drawable/logo" />
+
+        <Button
+            android:id="@+id/btnGobackCreateCouse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="68dp"
+            android:layout_marginEnd="18dp"
+            android:backgroundTint="#3c3d37"
+            android:text="go back"
+            app:layout_constraintEnd_toStartOf="@+id/imageView7"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <CalendarView
+            android:id="@+id/calendarView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="11dp"
+            android:layout_marginEnd="11dp"
+            app:layout_constraintBottom_toTopOf="@+id/etPriceForp"
+            app:layout_constraintEnd_toStartOf="@+id/calendarView2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/calendarView2" />
+
+        <EditText
+            android:id="@+id/etCourseName"
+            android:layout_width="399dp"
+            android:layout_height="0dp"
+            android:ems="10"
+            android:hint="Course Name"
+            android:inputType="text"
+            android:text=""
+            app:layout_constraintBottom_toTopOf="@+id/tvstartdate"
+            app:layout_constraintEnd_toEndOf="@+id/calendarView"
+            app:layout_constraintStart_toEndOf="@+id/calendarView"
+            app:layout_constraintTop_toBottomOf="@+id/textView6" />
+
+        <TextView
+            android:id="@+id/tvstartdate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="66dp"
+            android:layout_marginEnd="72dp"
+            android:layout_marginBottom="2dp"
+            android:text="start date"
+            app:layout_constraintBottom_toTopOf="@+id/calendarView"
+            app:layout_constraintEnd_toEndOf="@+id/calendarView"
+            app:layout_constraintStart_toStartOf="@+id/etCourseName" />
+
+        <TextView
+            android:id="@+id/tvenddate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="67dp"
+            android:layout_marginEnd="68dp"
+            android:text="end date"
+            app:layout_constraintEnd_toEndOf="@+id/etCourseName"
+            app:layout_constraintStart_toStartOf="@+id/calendarView2"
+            app:layout_constraintTop_toBottomOf="@+id/etCourseName" />
+
+        <Button
+            android:id="@+id/doneCreateCourse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            android:backgroundTint="#3c3d37"
+            android:text="done"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="44dp"
+            android:layout_marginBottom="46dp"
+            android:text="Create a Course"
+            android:textSize="35dp"
+            app:layout_constraintBottom_toTopOf="@+id/tvstartdate"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnGobackCreateCouse" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Navigation drawer -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="46dp"
-        android:backgroundTint="#3c3d37"
-        android:text="go back"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:menu="@menu/drawer_menu"
+        app:headerLayout="@layout/nav_header" />
 
-    <CalendarView
-        android:id="@+id/calendarView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="11dp"
-        android:layout_marginEnd="11dp"
-        app:layout_constraintBottom_toTopOf="@+id/etPriceForp"
-        app:layout_constraintEnd_toStartOf="@+id/calendarView2"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/calendarView2" />
-
-    <EditText
-        android:id="@+id/etCourseName"
-        android:layout_width="399dp"
-        android:layout_height="46dp"
-        android:layout_marginTop="207dp"
-        android:ems="10"
-        android:hint="Course Name"
-        android:inputType="text"
-        android:text=""
-        app:layout_constraintEnd_toEndOf="@+id/calendarView"
-        app:layout_constraintStart_toEndOf="@+id/calendarView"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/tvstartdate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="66dp"
-        android:layout_marginEnd="72dp"
-        android:text="start date"
-        app:layout_constraintEnd_toEndOf="@+id/calendarView"
-        app:layout_constraintStart_toStartOf="@+id/etCourseName"
-        app:layout_constraintTop_toBottomOf="@+id/etCourseName" />
-
-    <TextView
-        android:id="@+id/tvenddate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="67dp"
-        android:layout_marginEnd="68dp"
-        android:text="end date"
-        app:layout_constraintEnd_toEndOf="@+id/etCourseName"
-        app:layout_constraintStart_toStartOf="@+id/calendarView2"
-        app:layout_constraintTop_toBottomOf="@+id/etCourseName" />
-
-    <Button
-        android:id="@+id/doneCreateCourse"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="14dp"
-        android:backgroundTint="#3c3d37"
-        android:text="done"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.drawerlayout.widget.DrawerLayout>
