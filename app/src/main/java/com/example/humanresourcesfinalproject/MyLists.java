@@ -62,6 +62,17 @@ public class MyLists extends AppCompatActivity implements NavigationView.OnNavig
         mAuth = FirebaseAuth.getInstance();
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
         adminsRef = FirebaseDatabase.getInstance().getReference("Admins");
+        Button CourseHealth=findViewById(R.id.CourseHealthReport);
+        CourseHealth.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Go back to StartPage
+                Intent intent = new Intent(MyLists.this, ChooseYourCourseHealth.class);
+                startActivity(intent);
+                finish(); // Finish the current activity (LoginActivity)
+            }
+        });
+
 
 
         Button goBackBtn = findViewById(R.id.GoBackMyLists);
@@ -121,16 +132,14 @@ public class MyLists extends AppCompatActivity implements NavigationView.OnNavig
         int id = item.getItemId();
 
         if (id == R.id.nav_course_comprehensive) {
-            Intent intent = new Intent(this, CourseCompList.class);
+            Intent intent = new Intent(this, ChooseYourCourse.class);
             startActivity(intent);
         } else if (id == R.id.nav_course_health) {
-            // Add navigation to Course Health Report
-            // Implement the intent based on your app structure
-            Toast.makeText(this, "Course Health Report selected", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, ChooseYourCourseHealth.class);
+            startActivity(intent);
         } else if (id == R.id.nav_CourseInst) {
-            // Add navigation to Buses division
-            // Implement the intent based on your app structure
-            Toast.makeText(this, "Division into buses selected", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, ChooseYourCourseInstructors.class);
+            startActivity(intent);
         } else if (id == R.id.nav_school_comprehensive) {
             Intent intent = new Intent(this, SchoolComp.class);
             startActivity(intent);
@@ -138,8 +147,8 @@ public class MyLists extends AppCompatActivity implements NavigationView.OnNavig
             Intent intent = new Intent(this, SchoolInst.class);
             startActivity(intent);
         } else if (id == R.id.nav_school_health) {
-            Intent intent = new Intent(this, SchoolHealth.class);
-            startActivity(intent);
+            // Already in this activity
+            drawerLayout.closeDrawer(GravityCompat.START);
         }
 
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -199,8 +208,8 @@ public class MyLists extends AppCompatActivity implements NavigationView.OnNavig
 
             if (courseCount >= 2) {
                 // Redirect to ChooseCourse if user has 2 or more courses
-                Intent intent = new Intent(MyLists.this, ChooseCourse.class);
-                startActivity(intent);
+                //Intent intent = new Intent(MyLists.this, Choose.class);
+                //startActivity(intent);
             } else {
                 // Redirect to CourseCompList otherwise
                 Intent intent = new Intent(MyLists.this, ChooseYourCourse.class);

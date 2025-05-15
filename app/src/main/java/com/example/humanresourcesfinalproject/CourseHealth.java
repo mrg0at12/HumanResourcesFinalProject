@@ -1,4 +1,5 @@
 package com.example.humanresourcesfinalproject;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -6,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SearchView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -19,10 +21,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
-import com.example.humanresourcesfinalproject.model.Course;
 import com.example.humanresourcesfinalproject.model.User;
 import com.example.humanresourcesfinalproject.model.UserAdapter;
-import com.example.humanresourcesfinalproject.model.courseAdapter;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -32,32 +32,31 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
-public class CourseCompList extends AppCompatActivity implements  NavigationView.OnNavigationItemSelectedListener {
-
-    UserAdapter userAdapter;
-    ListView lvUser;
-    ArrayList<User> users = new ArrayList();
+public class CourseHealth extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    private UserAdapter userAdapter;
+    private ListView lvUser;
+    private TextView emptyView;
+    private ArrayList<User> allUsers = new ArrayList<>();
+    private ArrayList<User> healthUsers = new ArrayList<>(); // Users with health problems
+    private ArrayList<User> filteredUsers = new ArrayList<>(); // Filtered users with health problems
     private SearchView searchView;
 
-    Intent takeit;
-    String courseId = null;
+    private Intent takeit;
+    private String courseId = null;
 
     private FirebaseDatabase database;
-    private DatabaseReference myUserRefCoures;
+    private DatabaseReference myUserRefCourses;
     private DrawerLayout drawerLayout;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_course_comp_list);
+        setContentView(R.layout.activity_course_health);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
-
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -69,7 +68,14 @@ public class CourseCompList extends AppCompatActivity implements  NavigationView
                 this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
-        searchView = findViewById(R.id.SvCourseComp);
+
+        searchView = findViewById(R.id.SvCourseHealth);
+        lvUser = findViewById(R.id.lvCourseHealth);
+        emptyView = findViewById(R.id.emptyView);
+
+
+        lvUser.setEmptyView(emptyView);
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -81,61 +87,82 @@ public class CourseCompList extends AppCompatActivity implements  NavigationView
                 if (userAdapter != null) {
                     userAdapter.getFilter().filter(newText);
                 }
-                return false;
+                return true;
             }
         });
 
-
-        Button goBackBtn = findViewById(R.id.GoBackCourseComp);
+        Button goBackBtn = findViewById(R.id.GoBackCourseHealth);
         goBackBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Go back to StartPage
-                Intent intent = new Intent(CourseCompList.this, MyLists.class);
+                Intent intent = new Intent(CourseHealth.this, MyLists.class);
                 startActivity(intent);
-                finish(); // Finish the current activity (LoginActivity)
+                finish();
             }
         });
 
-        lvUser=findViewById(R.id.lvCourseComp);
         database = FirebaseDatabase.getInstance();
-
 
         takeit = getIntent();
         courseId = takeit.getStringExtra("courseId");
 
         if (courseId != null) {
-            myUserRefCoures = database.getReference("EnrollCourses2").child(courseId);
-            users.clear();
+            loadUsersFromFirebase();
+        } else {
+            Toast.makeText(this, "No course ID provided", Toast.LENGTH_SHORT).show();
+        }
 
-            myUserRefCoures.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
+    }
+    private void loadUsersFromFirebase() {
+        myUserRefCourses = database.getReference("EnrollCourses2").child(courseId);
+        allUsers.clear();
+        healthUsers.clear();
+        filteredUsers.clear();
 
+        myUserRefCourses.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot i : snapshot.getChildren()) {
+                    User user = i.getValue(User.class);
+                    if (user != null) {
+                        allUsers.add(user);
 
-                    for (DataSnapshot i : snapshot.getChildren()) {
-                        User user = i.getValue(User.class);
-                        if (user != null) {
-                            users.add(user);
-
+                        // Check if user has health problems
+                        if (hasHealthProblems(user)) {
+                            healthUsers.add(user);
                         }
                     }
+                }
 
-                    userAdapter = new UserAdapter(CourseCompList.this, 0,  users);
+                // Update UI based on health users
+                if (healthUsers.isEmpty()) {
+                    emptyView.setText("No users with health problems found");
+                    emptyView.setVisibility(View.VISIBLE);
+                } else {
+                    emptyView.setVisibility(View.GONE);
+                    // Initialize adapter with health users initially
+                    userAdapter = new UserAdapter(CourseHealth.this, 0, healthUsers);
                     lvUser.setAdapter(userAdapter);
-
-
                 }
+            }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-
-            });
-
-        }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(CourseHealth.this, "Failed to load users: " + error.getMessage(),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
+    // Check if user has health problems
+    private boolean hasHealthProblems(User user) {
+        // Using the correct method getHealthProblems() from your User model
+        return user.getHealthProblems() != null &&
+                !user.getHealthProblems().isEmpty() &&
+                !user.getHealthProblems().equalsIgnoreCase("none");
+    }
+
+    @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
@@ -162,4 +189,5 @@ public class CourseCompList extends AppCompatActivity implements  NavigationView
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
+
 }

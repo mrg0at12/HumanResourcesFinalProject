@@ -104,21 +104,23 @@ public class SchoolInst extends AppCompatActivity implements NavigationView.OnNa
         int id = item.getItemId();
 
         if (id == R.id.nav_course_comprehensive) {
-            Intent intent = new Intent(this, CourseCompList.class);
+            Intent intent = new Intent(this, ChooseYourCourse.class);
             startActivity(intent);
         } else if (id == R.id.nav_course_health) {
-            Toast.makeText(this, "Course Health Report selected", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, ChooseYourCourseHealth.class);
+            startActivity(intent);
         } else if (id == R.id.nav_CourseInst) {
-            Toast.makeText(this, "Course instructors and teachers selected", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, ChooseYourCourseInstructors.class);
+            startActivity(intent);
         } else if (id == R.id.nav_school_comprehensive) {
             Intent intent = new Intent(this, SchoolComp.class);
             startActivity(intent);
         } else if (id == R.id.nav_instructors) {
+            Intent intent = new Intent(this, SchoolInst.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_school_health) {
             // Already in this activity
             drawerLayout.closeDrawer(GravityCompat.START);
-        } else if (id == R.id.nav_school_health) {
-            Intent intent = new Intent(this, SchoolHealth.class);
-            startActivity(intent);
         }
 
         drawerLayout.closeDrawer(GravityCompat.START);

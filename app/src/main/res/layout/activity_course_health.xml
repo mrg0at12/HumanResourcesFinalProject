@@ -5,8 +5,7 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".CourseCompList">
-
+    tools:context=".CourseHealth">
     <!-- Main Content -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main"
@@ -21,16 +20,16 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="11dp"
             android:background="#F5E7CF"
-            app:layout_constraintBottom_toTopOf="@+id/GoBackCourseComp"
+            app:layout_constraintBottom_toTopOf="@+id/GoBackCourseHealth"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:title="Course Comprehensive List"
+            app:title="Course Health Issues List"
             app:titleTextColor="#F5E7CF" />
 
         <!-- Add SearchView here -->
         <SearchView
-            android:id="@+id/SvCourseComp"
+            android:id="@+id/SvCourseHealth"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -38,23 +37,23 @@
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="8dp"
             android:iconifiedByDefault="false"
-            android:queryHint="Search users..."
-            app:layout_constraintBottom_toTopOf="@+id/lvCourseComp"
+            android:queryHint="Search users with health issues..."
+            app:layout_constraintBottom_toTopOf="@+id/lvCourseHealth"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView7" />
 
         <ListView
-            android:id="@+id/lvCourseComp"
+            android:id="@+id/lvCourseHealth"
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/SvCourseComp" />
+            app:layout_constraintTop_toBottomOf="@+id/SvCourseHealth" />
 
         <Button
-            android:id="@+id/GoBackCourseComp"
+            android:id="@+id/GoBackCourseHealth"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -76,7 +75,7 @@
             android:layout_marginBottom="8dp"
             app:layout_constraintBottom_toTopOf="@+id/textView7"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/GoBackCourseComp"
+            app:layout_constraintStart_toEndOf="@+id/GoBackCourseHealth"
             app:layout_constraintTop_toBottomOf="@+id/toolbar"
             app:srcCompat="@drawable/logo" />
 
@@ -86,11 +85,23 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="29dp"
             android:layout_marginBottom="8dp"
-            android:text="Course Comprehensive List"
-            android:textSize="30dp"
-            app:layout_constraintBottom_toTopOf="@+id/SvCourseComp"
+            android:text="Students With Health Issues"
+            android:textSize="28dp"
+            app:layout_constraintBottom_toTopOf="@+id/SvCourseHealth"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/GoBackCourseComp" />
+            app:layout_constraintTop_toBottomOf="@+id/GoBackCourseHealth" />
+
+        <TextView
+            android:id="@+id/emptyView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No users with health issues found"
+            android:textSize="18sp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/lvCourseHealth" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -102,5 +113,4 @@
         android:layout_gravity="start"
         app:menu="@menu/my_lists_drawer_menu"
         app:headerLayout="@layout/my_lists_nav_header" />
-
 </androidx.drawerlayout.widget.DrawerLayout>
