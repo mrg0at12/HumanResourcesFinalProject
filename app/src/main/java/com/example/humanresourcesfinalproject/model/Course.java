@@ -1,8 +1,9 @@
 package com.example.humanresourcesfinalproject.model;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Date;
 
-public class Course {
+public class Course implements Serializable {
     private String id;
     private String courseId;
     private String courseName;

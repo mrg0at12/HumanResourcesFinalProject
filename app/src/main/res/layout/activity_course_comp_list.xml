@@ -7,4 +7,27 @@
     android:layout_height="match_parent"
     tools:context=".CourseCompList">
 
+    <TextView
+        android:id="@+id/textView7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="132dp"
+        android:layout_marginTop="57dp"
+        android:layout_marginBottom="120dp"
+        android:text="TextView"
+        app:layout_constraintBottom_toTopOf="@+id/lvCourseComp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ListView
+        android:id="@+id/lvCourseComp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="59dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView7" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

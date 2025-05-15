@@ -21,7 +21,7 @@ public class courseAdapter<p> extends ArrayAdapter<Course> {
 
     private final Context context;
     private final List<Course> courseList;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+
 
 
     public courseAdapter(@NonNull Context context, int resource, int textViewResourceId, @NonNull List<Course> objects) {
@@ -32,42 +32,45 @@ public class courseAdapter<p> extends ArrayAdapter<Course> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        ViewHolder holder;
 
-        if (convertView == null) {
-            LayoutInflater inflater = LayoutInflater.from(context);
-            convertView = inflater.inflate(R.layout.courserow, parent, false);
 
-            holder = new ViewHolder();
-            holder.tvCourseName = convertView.findViewById(R.id.tvCourseName);
-            holder.tvStartDate = convertView.findViewById(R.id.tvStartdaterow);
-            holder.tvEndDate = convertView.findViewById(R.id.tvenddaterow);
-            holder.tvPriceForPupil = convertView.findViewById(R.id.tvPriceForPupil);
-            holder.tvPriceForTeacher = convertView.findViewById(R.id.tvPriceForTeacher);
-
-            convertView.setTag(holder);
-        } else {
-            holder = (ViewHolder) convertView.getTag();
-        }
-
-        Course course = courseList.get(position);
-
-        // Set values to views
-        holder.tvCourseName.setText(course.getCourseName());
-        holder.tvStartDate.setText("Start: " + dateFormat.format(course.getStartDate()));
-        holder.tvEndDate.setText("End: " + dateFormat.format(course.getEndDate()));
-        holder.tvPriceForPupil.setText("Pupil: $" + course.getPricePupil());
-        holder.tvPriceForTeacher.setText("Teacher: $" + course.getPriceTeach());
-
-        return convertView;
-    }
-
-    static class ViewHolder {
         TextView tvCourseName;
         TextView tvStartDate;
         TextView tvEndDate;
         TextView tvPriceForPupil;
         TextView tvPriceForTeacher;
+
+          SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+
+
+            LayoutInflater inflater = LayoutInflater.from(context);
+            convertView = inflater.inflate(R.layout.courserow, parent, false);
+
+
+
+
+            tvStartDate = convertView.findViewById(R.id.tvStartdaterow);
+            tvEndDate = convertView.findViewById(R.id.tvenddaterow);
+            tvPriceForPupil = convertView.findViewById(R.id.tvPriceForPupil);
+          tvPriceForTeacher = convertView.findViewById(R.id.tvPriceForTeacher);
+           tvCourseName = convertView.findViewById(R.id.tvCourseName);
+
+
+
+
+        Course course = courseList.get(position);
+
+        // Set values to views
+        tvCourseName.setText(course.getCourseName());
+        if(course.getStartDate()!=null)
+                tvStartDate.setText("Start: " + dateFormat.format(course.getStartDate()));
+        if(course.getEndDate()!=null)
+                         tvEndDate.setText("End: " + dateFormat.format(course.getEndDate()));
+        tvPriceForPupil.setText("Pupil: $" + course.getPricePupil());
+        tvPriceForTeacher.setText("Teacher: $" + course.getPriceTeach());
+
+        return convertView;
     }
+
 
 }

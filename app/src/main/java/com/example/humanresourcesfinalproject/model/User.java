@@ -1,8 +1,9 @@
 package com.example.humanresourcesfinalproject.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class User {
+public class User implements Serializable {
     private String id;
     private String fname, lname, phone, email, password, shirtSize, kidId, school, parentName, parentPhone, schoolYear;
     private String healthFund, healthProblems, foodType;

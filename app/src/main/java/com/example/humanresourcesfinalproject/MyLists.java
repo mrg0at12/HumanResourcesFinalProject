@@ -203,7 +203,7 @@ public class MyLists extends AppCompatActivity implements NavigationView.OnNavig
                 startActivity(intent);
             } else {
                 // Redirect to CourseCompList otherwise
-                Intent intent = new Intent(MyLists.this, CourseCompList.class);
+                Intent intent = new Intent(MyLists.this, ChooseYourCourse.class);
                 startActivity(intent);
             }
         } else {

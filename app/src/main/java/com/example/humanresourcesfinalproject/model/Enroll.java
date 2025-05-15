@@ -1,13 +1,15 @@
 package com.example.humanresourcesfinalproject.model;
 
-public class Enroll
+import java.io.Serializable;
+
+public class Enroll  implements Serializable
 {
-    protected  String id;
+
     protected  String userId;
     protected  Course course;
 
-    public Enroll(String id, String userId, Course course) {
-        this.id = id;
+    public Enroll(String userId, Course course) {
+
         this.userId = userId;
         this.course = course;
     }
@@ -15,13 +17,6 @@ public class Enroll
     public Enroll() {
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getUserId() {
         return userId;
@@ -42,7 +37,7 @@ public class Enroll
     @Override
     public String toString() {
         return "Enroll{" +
-                "id='" + id + '\'' +
+
                 ", userId='" + userId + '\'' +
                 ", course=" + course +
                 '}';

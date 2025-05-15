@@ -65,8 +65,8 @@ public class SignUpForCourse extends AppCompatActivity {
 
         coursesReference = FirebaseDatabase.getInstance().getReference("courses");
         userReference = FirebaseDatabase.getInstance().getReference("Users");
-        enrollUsersReference = FirebaseDatabase.getInstance().getReference("EnrollForUsers").push();
-        enrollCoursesReference = FirebaseDatabase.getInstance().getReference("EnrollCourses");
+        enrollUsersReference = FirebaseDatabase.getInstance().getReference("EnrollForUsers2");
+        enrollCoursesReference = FirebaseDatabase.getInstance().getReference("EnrollCourses2");
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         courseIds = new ArrayList<>();
@@ -122,12 +122,26 @@ public class SignUpForCourse extends AppCompatActivity {
                     Course course = (Course) parent.getItemAtPosition(position);
                     String courseId = course.getCourseId();
 
-                    Enroll newEnroll = new Enroll(enrollUsersReference.getKey(), user.getId(), course);
-                    enrollUsersReference.child(user.getId()).setValue(newEnroll);
+
+
+                   // Enroll newEnroll = new Enroll( user.getId(), course);
+                   // enrollUsersReference.child(user.getId()).setValue(newEnroll);
+
+                    enrollUsersReference.child(user.getId()).child(courseId).setValue(course);
                     enrollCoursesReference.child(courseId).child(user.getId()).setValue(user);
 
                     scheduleNotification(user.getFname(), course.getCourseName());
                     Toast.makeText(SignUpForCourse.this, "Signed up for course: " + course.getCourseName(), Toast.LENGTH_SHORT).show();
+
+                    if(user.getIsTeacher()){
+
+                        Intent go=new Intent(SignUpForCourse.this, CourseCompList.class);
+
+                        go.putExtra("courseId",courseId);
+                        startActivity(go);
+
+                    }
+
                 });
             }
 

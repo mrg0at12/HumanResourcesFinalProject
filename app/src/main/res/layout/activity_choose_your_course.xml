@@ -4,6 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="#F5E7CF"
+    android:id="@+id/main"
     android:padding="16dp">
 
     <TextView
@@ -19,7 +20,7 @@
         android:id="@+id/courseListView"
         android:layout_width="match_parent"
         android:layout_height="400dp"
-    android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp"/>
 
     <Button
         android:id="@+id/btnCancel"
