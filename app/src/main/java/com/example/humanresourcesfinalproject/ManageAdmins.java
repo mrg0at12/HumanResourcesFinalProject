@@ -24,6 +24,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.humanresourcesfinalproject.model.Admin;
 import com.example.humanresourcesfinalproject.model.User;
+import com.example.humanresourcesfinalproject.model.UserAdapter;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -35,9 +36,8 @@ import java.util.ArrayList;
 
 public class ManageAdmins extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private ListView lvUserAdminManage;
-    private ArrayList<String> userList;
-    private ArrayList<User> userObjects;
-    private ArrayAdapter<String> adapter;
+    private ArrayList<User> userList;
+    private UserAdapter userAdapter;
     private DatabaseReference usersRef, adminsRef;
     private SearchView searchView;
     private DrawerLayout drawerLayout;
@@ -53,7 +53,6 @@ public class ManageAdmins extends AppCompatActivity implements NavigationView.On
             return insets;
         });
 
-        // Set up the toolbar and drawer
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -67,33 +66,29 @@ public class ManageAdmins extends AppCompatActivity implements NavigationView.On
         toggle.syncState();
 
         Button goBackBtn = findViewById(R.id.btngoBackManageAdmin);
-        goBackBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Go back to StartPage
-                Intent intent = new Intent(ManageAdmins.this, SystemManagement.class);
-                startActivity(intent);
-                finish(); // Finish the current activity (LoginActivity)
-            }
+        goBackBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(ManageAdmins.this, SystemManagement.class);
+            startActivity(intent);
+            finish();
         });
 
+        // Initialize UI components
         searchView = findViewById(R.id.searchViewUserAdmin);
-
         lvUserAdminManage = findViewById(R.id.lvUserAdminManage);
         userList = new ArrayList<>();
-        userObjects = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, userList);
-        lvUserAdminManage.setAdapter(adapter);
+        userAdapter = new UserAdapter(this, 0, userList);
+        lvUserAdminManage.setAdapter(userAdapter);
 
+        // Set up search functionality
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                return false; // Not needed for live filtering
+                return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                adapter.getFilter().filter(newText);
+                userAdapter.getFilter().filter(newText);
                 return false;
             }
         });
@@ -106,28 +101,31 @@ public class ManageAdmins extends AppCompatActivity implements NavigationView.On
 
         // Set long-click listener to promote user to admin
         lvUserAdminManage.setOnItemLongClickListener((parent, view, position, id) -> {
-            User selectedUser = userObjects.get(position);
-            showAdminConfirmationDialog(selectedUser);
+            User selectedUser = userAdapter.getItem(position);
+            if (selectedUser != null) {
+                showAdminConfirmationDialog(selectedUser);
+            }
             return true;
         });
     }
+
 
     private void fetchUsers() {
         usersRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-                userList.clear();
-                userObjects.clear();
-
+                ArrayList<User> tempList = new ArrayList<>();
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     User user = dataSnapshot.getValue(User.class);
                     if (user != null) {
-                        userObjects.add(user);
-                        String userInfo = user.getFname() + " " + user.getLname() + " - " + user.getEmail() + " - " + user.getPhone();
-                        userList.add(userInfo);
+                        tempList.add(user);
                     }
                 }
-                adapter.notifyDataSetChanged();
+
+                // Update the adapter
+                userList.clear();
+                userList.addAll(tempList);
+                userAdapter.updateList(userList);
             }
 
             @Override

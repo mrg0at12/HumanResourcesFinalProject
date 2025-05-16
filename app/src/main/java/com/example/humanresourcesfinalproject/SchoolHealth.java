@@ -38,12 +38,10 @@ public class SchoolHealth extends AppCompatActivity implements  NavigationView.O
     private ListView listView;
     private UserAdapter userAdapter;
     private ArrayList<User> healthIssueList;
-    private ArrayList<User> filteredList;
     private DatabaseReference databaseReference;
-    private String currentUserSchool = ""; // User's school
+    private String currentUserSchool = "";
     private FirebaseAuth auth;
     private SearchView searchView;
-
     private DrawerLayout drawerLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +54,6 @@ public class SchoolHealth extends AppCompatActivity implements  NavigationView.O
             return insets;
         });
 
-        // Set up toolbar and drawer
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -70,10 +67,19 @@ public class SchoolHealth extends AppCompatActivity implements  NavigationView.O
         toggle.syncState();
 
         searchView = findViewById(R.id.SvSchoolHealth);
+        listView = findViewById(R.id.healthListView);
+        healthIssueList = new ArrayList<>();
+        userAdapter = new UserAdapter(this, 0, healthIssueList);
+        listView.setAdapter(userAdapter);
+
+        auth = FirebaseAuth.getInstance();
+        databaseReference = FirebaseDatabase.getInstance().getReference("Users");
+
+        // Set up search functionality
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                return false; // Not needed for live filtering
+                return false;
             }
 
             @Override
@@ -84,22 +90,11 @@ public class SchoolHealth extends AppCompatActivity implements  NavigationView.O
         });
 
         Button goBackBtn = findViewById(R.id.GoBackHealthSchool);
-        goBackBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(SchoolHealth.this, MyLists.class);
-                startActivity(intent);
-                finish();
-            }
+        goBackBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(SchoolHealth.this, MyLists.class);
+            startActivity(intent);
+            finish();
         });
-
-        listView = findViewById(R.id.healthListView);
-        healthIssueList = new ArrayList<>();
-        userAdapter = new UserAdapter(this, 0, healthIssueList);
-        listView.setAdapter(userAdapter);
-
-        auth = FirebaseAuth.getInstance();
-        databaseReference = FirebaseDatabase.getInstance().getReference("Users");
 
         fetchCurrentUserSchool();
     }
@@ -108,23 +103,15 @@ public class SchoolHealth extends AppCompatActivity implements  NavigationView.O
         int id = item.getItemId();
 
         if (id == R.id.nav_course_comprehensive) {
-            Intent intent = new Intent(this, ChooseYourCourse.class);
-            startActivity(intent);
+            startActivity(new Intent(this, ChooseYourCourse.class));
         } else if (id == R.id.nav_course_health) {
-            Intent intent = new Intent(this, ChooseYourCourseHealth.class);
-            startActivity(intent);
+            startActivity(new Intent(this, ChooseYourCourseHealth.class));
         } else if (id == R.id.nav_CourseInst) {
-            Intent intent = new Intent(this, ChooseYourCourseInstructors.class);
-            startActivity(intent);
+            startActivity(new Intent(this, ChooseYourCourseInstructors.class));
         } else if (id == R.id.nav_school_comprehensive) {
-            Intent intent = new Intent(this, SchoolComp.class);
-            startActivity(intent);
+            startActivity(new Intent(this, SchoolComp.class));
         } else if (id == R.id.nav_instructors) {
-            Intent intent = new Intent(this, SchoolInst.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_school_health) {
-            // Already in this activity
-            drawerLayout.closeDrawer(GravityCompat.START);
+            startActivity(new Intent(this, SchoolInst.class));
         }
 
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -139,6 +126,7 @@ public class SchoolHealth extends AppCompatActivity implements  NavigationView.O
             super.onBackPressed();
         }
     }
+
     private void fetchCurrentUserSchool() {
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser != null) {
@@ -172,17 +160,22 @@ public class SchoolHealth extends AppCompatActivity implements  NavigationView.O
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                healthIssueList.clear();
+                ArrayList<User> tempList = new ArrayList<>();
                 for (DataSnapshot data : snapshot.getChildren()) {
                     User user = data.getValue(User.class);
                     if (user != null && user.getSchool().equals(currentUserSchool)) {
                         String healthProblems = user.getHealthProblems();
                         if (healthProblems != null && !healthProblems.equalsIgnoreCase("None") && !healthProblems.trim().isEmpty()) {
-                            healthIssueList.add(user);
+                            tempList.add(user);
                         }
                     }
                 }
-                userAdapter.notifyDataSetChanged();
+
+                // Update the adapter
+                healthIssueList.clear();
+                healthIssueList.addAll(tempList);
+                userAdapter.updateList(healthIssueList);
+
                 if (healthIssueList.isEmpty()) {
                     Toast.makeText(SchoolHealth.this, "No students with health issues found.", Toast.LENGTH_SHORT).show();
                 }
