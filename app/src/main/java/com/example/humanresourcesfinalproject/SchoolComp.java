@@ -22,6 +22,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.humanresourcesfinalproject.model.Admin;
+import com.example.humanresourcesfinalproject.model.ClickHandlerUtil;
 import com.example.humanresourcesfinalproject.model.User;
 import com.example.humanresourcesfinalproject.model.UserAdapter;
 import com.google.android.material.navigation.NavigationView;
@@ -40,15 +41,12 @@ public class SchoolComp extends AppCompatActivity implements NavigationView.OnNa
 
     private ListView listView;
     private UserAdapter userAdapter;
-
     private ArrayList<User> schoolMembersList;
-    private DatabaseReference usersRef, adminsRef;
+    private DatabaseReference usersRef;
     private String currentUserSchool = "";
     private FirebaseAuth auth;
-    private int pendingQueries = 0;
     private SearchView searchView;
     private DrawerLayout drawerLayout;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,21 +61,36 @@ public class SchoolComp extends AppCompatActivity implements NavigationView.OnNa
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
+        listView = findViewById(R.id.schoolListView);
+        searchView = findViewById(R.id.SvSchoolComp);
+        schoolMembersList = new ArrayList<>();
+        userAdapter = new UserAdapter(this, 0, schoolMembersList);
 
-        searchView=findViewById(R.id.SvSchoolComp);
+        // Set up the interaction listener
+        userAdapter.setOnUserInteractionListener(new UserAdapter.OnUserInteractionListener() {
+            @Override
+            public void onUserClick(User user) {
+                Intent intent = new Intent(SchoolComp.this, UserInfo.class);
+                intent.putExtra("userId", user.getId());
+                startActivity(intent);
+            }
+
+            @Override
+            public void onUserLongClick(User user) {
+                // Handle long click if needed
+            }
+        });
+
+        listView.setAdapter(userAdapter);
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                return false; // Not needed for live filtering
+                return false;
             }
 
             @Override
@@ -88,28 +101,14 @@ public class SchoolComp extends AppCompatActivity implements NavigationView.OnNa
         });
 
         Button goBackBtn = findViewById(R.id.GoBackCompSchool);
-        goBackBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Go back to StartPage
-                Intent intent = new Intent(SchoolComp.this, MyLists.class);
-                startActivity(intent);
-                finish(); // Finish the current activity (LoginActivity)
-            }
+        goBackBtn.setOnClickListener(v -> {
+            startActivity(new Intent(SchoolComp.this, MyLists.class));
+            finish();
         });
-
-        listView = findViewById(R.id.schoolListView);
-        schoolMembersList = new ArrayList<>();
-       userAdapter = new UserAdapter(this, 0, schoolMembersList);
-        listView.setAdapter(userAdapter);
 
         auth = FirebaseAuth.getInstance();
         usersRef = FirebaseDatabase.getInstance().getReference("Users");
-        adminsRef = FirebaseDatabase.getInstance().getReference("Admins");
-
         fetchCurrentUserSchool();
-
-
     }
 
     @Override
@@ -117,23 +116,17 @@ public class SchoolComp extends AppCompatActivity implements NavigationView.OnNa
         int id = item.getItemId();
 
         if (id == R.id.nav_course_comprehensive) {
-            Intent intent = new Intent(this, ChooseYourCourse.class);
-            startActivity(intent);
+            startActivity(new Intent(this, ChooseYourCourse.class));
         } else if (id == R.id.nav_course_health) {
-            Intent intent = new Intent(this, ChooseYourCourseHealth.class);
-            startActivity(intent);
+            startActivity(new Intent(this, ChooseYourCourseHealth.class));
         } else if (id == R.id.nav_CourseInst) {
-            Intent intent = new Intent(this, ChooseYourCourseInstructors.class);
-            startActivity(intent);
+            startActivity(new Intent(this, ChooseYourCourseInstructors.class));
         } else if (id == R.id.nav_school_comprehensive) {
-            Intent intent = new Intent(this, SchoolComp.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_instructors) {
-            Intent intent = new Intent(this, SchoolInst.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_school_health) {
             // Already in this activity
-            drawerLayout.closeDrawer(GravityCompat.START);
+        } else if (id == R.id.nav_instructors) {
+            startActivity(new Intent(this, SchoolInst.class));
+        } else if (id == R.id.nav_school_health) {
+            startActivity(new Intent(this, SchoolHealth.class));
         }
 
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -149,122 +142,50 @@ public class SchoolComp extends AppCompatActivity implements NavigationView.OnNa
         }
     }
 
-
     private void fetchCurrentUserSchool() {
-        String userId  = auth.getCurrentUser().getUid();
-       if(userId!=null){
-
-            usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    User user = snapshot.getValue(User.class);
-                    if (user != null) {
-
-                        //Toast.makeText(SchoolComp.this, user.getSchool(), Toast.LENGTH_LONG).show();
-
-                        currentUserSchool = user.getSchool();
-                        fetchSchoolMembers();
-                    } else {
-                        Toast.makeText(SchoolComp.this, "User data not found", Toast.LENGTH_SHORT).show();
-                    }
+        String userId = auth.getCurrentUser().getUid();
+        usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                User user = snapshot.getValue(User.class);
+                if (user != null && user.getSchool() != null) {
+                    currentUserSchool = user.getSchool();
+                    fetchSchoolMembers();
+                } else {
+                    Toast.makeText(SchoolComp.this, "User school not found", Toast.LENGTH_SHORT).show();
                 }
+            }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-                    Toast.makeText(SchoolComp.this, "Failed to fetch user school", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(SchoolComp.this, "Failed to fetch school", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void fetchSchoolMembers() {
-        if (currentUserSchool.isEmpty()) {
-            Toast.makeText(this, "No school found for user", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        pendingQueries = 2; // We are making two queries (Users & Admins)
-
-        fetchUsers();
-        fetchAdmins();
-    }
-
-    private void fetchUsers() {
-
-
         usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                schoolMembersList.clear();
                 for (DataSnapshot data : snapshot.getChildren()) {
                     User user = data.getValue(User.class);
-                    if (user != null && user.getSchool().equals(currentUserSchool)) {
-
+                    if (user != null && user.getSchool() != null &&
+                            user.getSchool().equals(currentUserSchool)) {
                         schoolMembersList.add(user);
-
-                        Toast.makeText(SchoolComp.this, user.getFname(), Toast.LENGTH_LONG).show();
-
-                        //   String details = "👤 " + user.getFname() + " " + user.getLname() +
-                      //          "\n📧 Email: " + user.getEmail() +
-                      //          "\n📞 Phone: " + user.getPhone() +
-                       //         "\n🏫 Role: " + getUserRole(user) +
-                       //         "\n--------------------------";
-                       // schoolMembersList.add(details);
                     }
                 }
-                userAdapter = new UserAdapter(SchoolComp.this, 0, schoolMembersList);
-                listView.setAdapter(userAdapter);
+                userAdapter.updateList(schoolMembersList);
 
-                //checkQueriesComplete();
+                if (schoolMembersList.isEmpty()) {
+                    Toast.makeText(SchoolComp.this, "No members found in your school", Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(SchoolComp.this, "Failed to load users.", Toast.LENGTH_SHORT).show();
-                checkQueriesComplete();
+                Toast.makeText(SchoolComp.this, "Failed to load users", Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private void fetchAdmins() {
-        adminsRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot data : snapshot.getChildren()) {
-                    Admin admin = data.getValue(Admin.class);
-
-                    if (admin != null && admin.getSchool().equals(currentUserSchool)) {
-                        String details = "👑 ADMIN: " + admin.getFname() + " " + admin.getLname() +
-                                "\n📧 Email: " + admin.getEmail() +
-                                "\n📞 Phone: " + admin.getPhone() +
-                                "\n🏫 School: " + admin.getSchool() +
-                                "\n--------------------------";
-                        schoolMembersList.add(admin);
-                    }
-                }
-                checkQueriesComplete();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(SchoolComp.this, "Failed to load admins.", Toast.LENGTH_SHORT).show();
-                checkQueriesComplete();
-            }
-        });
-    }
-
-    private String getUserRole(User user) {
-        if (Boolean.TRUE.equals(user.getIsTeacher())) return "Teacher";
-        if (Boolean.TRUE.equals(user.getIsGuide())) return "Guide";
-        return "Student";
-    }
-
-    private void checkQueriesComplete() {
-        pendingQueries--;
-        if (pendingQueries == 0) {
-            userAdapter.notifyDataSetChanged();
-            if (schoolMembersList.isEmpty()) {
-                Toast.makeText(SchoolComp.this, "No members found.", Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 }

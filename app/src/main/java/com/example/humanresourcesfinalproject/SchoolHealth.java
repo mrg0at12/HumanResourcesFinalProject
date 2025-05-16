@@ -70,6 +70,22 @@ public class SchoolHealth extends AppCompatActivity implements  NavigationView.O
         listView = findViewById(R.id.healthListView);
         healthIssueList = new ArrayList<>();
         userAdapter = new UserAdapter(this, 0, healthIssueList);
+
+        // Set up the click listener for user items
+        userAdapter.setOnUserInteractionListener(new UserAdapter.OnUserInteractionListener() {
+            @Override
+            public void onUserClick(User user) {
+                Intent intent = new Intent(SchoolHealth.this, UserInfo.class);
+                intent.putExtra("userId", user.getId());
+                startActivity(intent);
+            }
+
+            @Override
+            public void onUserLongClick(User user) {
+                // Handle long click if needed
+            }
+        });
+
         listView.setAdapter(userAdapter);
 
         auth = FirebaseAuth.getInstance();

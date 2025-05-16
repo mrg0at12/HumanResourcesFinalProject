@@ -67,10 +67,27 @@ public class SchoolInst extends AppCompatActivity implements NavigationView.OnNa
                 this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
+
         searchView = findViewById(R.id.SvSchoolInst);
         listView = findViewById(R.id.instructorListView);
         instructorList = new ArrayList<>();
         userAdapter = new UserAdapter(this, 0, instructorList);
+
+        // Set up the click listener for instructor items
+        userAdapter.setOnUserInteractionListener(new UserAdapter.OnUserInteractionListener() {
+            @Override
+            public void onUserClick(User user) {
+                Intent intent = new Intent(SchoolInst.this, UserInfo.class);
+                intent.putExtra("userId", user.getId());
+                startActivity(intent);
+            }
+
+            @Override
+            public void onUserLongClick(User user) {
+                // Handle long click if needed
+            }
+        });
+
         listView.setAdapter(userAdapter);
 
         auth = FirebaseAuth.getInstance();
@@ -144,7 +161,6 @@ public class SchoolInst extends AppCompatActivity implements NavigationView.OnNa
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     User user = snapshot.getValue(User.class);
                     if (user != null) {
-                        //Toast.makeText(SchoolInst.this, user.getSchool(), Toast.LENGTH_LONG).show();
                         currentUserSchool = user.getSchool();
                         fetchInstructors();
                     } else {
@@ -171,18 +187,16 @@ public class SchoolInst extends AppCompatActivity implements NavigationView.OnNa
         usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                instructorList.clear(); // Clear the list before adding new items
                 for (DataSnapshot data : snapshot.getChildren()) {
                     User user = data.getValue(User.class);
                     if (user != null && user.getSchool().equals(currentUserSchool) &&
                             (Boolean.TRUE.equals(user.getIsTeacher()) || Boolean.TRUE.equals(user.getIsGuide()))) {
-
                         instructorList.add(user);
-                        //Toast.makeText(SchoolInst.this, user.getFname(), Toast.LENGTH_LONG).show();
                     }
                 }
 
-                userAdapter = new UserAdapter(SchoolInst.this, 0, instructorList);
-                listView.setAdapter(userAdapter);
+                userAdapter.updateList(instructorList); // Use updateList instead of creating new adapter
                 checkQueriesComplete();
             }
 
@@ -197,7 +211,6 @@ public class SchoolInst extends AppCompatActivity implements NavigationView.OnNa
     private void checkQueriesComplete() {
         pendingQueries--;
         if (pendingQueries == 0) {
-            userAdapter.notifyDataSetChanged();
             if (instructorList.isEmpty()) {
                 Toast.makeText(SchoolInst.this, "No instructors found.", Toast.LENGTH_SHORT).show();
             }

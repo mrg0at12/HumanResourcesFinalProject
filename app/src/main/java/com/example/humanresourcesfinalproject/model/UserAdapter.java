@@ -20,15 +20,25 @@ import java.util.List;
 
 public class UserAdapter extends ArrayAdapter<User> {
 
+    public interface OnUserInteractionListener {
+        void onUserClick(User user);
+        void onUserLongClick(User user);
+    }
+
     private final Context context;
     private List<User> userList;
     private List<User> filteredUserList;
+    private OnUserInteractionListener interactionListener;
 
     public UserAdapter(@NonNull Context context, int resource, @NonNull List<User> objects) {
         super(context, 0, objects);
         this.context = context;
-        this.userList = new ArrayList<>(objects); // Original list
-        this.filteredUserList = new ArrayList<>(objects); // Filtered list
+        this.userList = new ArrayList<>(objects);
+        this.filteredUserList = new ArrayList<>(objects);
+    }
+
+    public void setOnUserInteractionListener(OnUserInteractionListener listener) {
+        this.interactionListener = listener;
     }
 
     @NonNull
@@ -44,25 +54,24 @@ public class UserAdapter extends ArrayAdapter<User> {
             holder.rowUserName = convertView.findViewById(R.id.rowUserName);
             holder.rowUserPhone = convertView.findViewById(R.id.rowUserPhone);
             holder.rowUserID = convertView.findViewById(R.id.rowUserID);
-
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
 
         User user = filteredUserList.get(position);
-
-        // Display user details with emojis
         holder.rowUserName.setText("👤 " + user.getFname() + " " + user.getLname());
         holder.rowUserPhone.setText("📞 " + user.getPhone());
         holder.rowUserID.setText("🆔 " + user.getKidId());
 
-        // Row click → open UserInfo
-        convertView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, UserInfo.class);
-            intent.putExtra("userId", user.getId()); // Passing user ID to the next screen
-            context.startActivity(intent);
-        });
+        // Set both click and long click listeners
+        if (interactionListener != null) {
+            convertView.setOnClickListener(v -> interactionListener.onUserClick(user));
+            convertView.setOnLongClickListener(v -> {
+                interactionListener.onUserLongClick(user);
+                return true;
+            });
+        }
 
         return convertView;
     }
@@ -114,6 +123,7 @@ public class UserAdapter extends ArrayAdapter<User> {
             }
         };
     }
+
     public void updateList(List<User> newList) {
         userList.clear();
         userList.addAll(newList);
@@ -121,6 +131,7 @@ public class UserAdapter extends ArrayAdapter<User> {
         filteredUserList.addAll(newList);
         notifyDataSetChanged();
     }
+
     static class ViewHolder {
         TextView rowUserName;
         TextView rowUserPhone;

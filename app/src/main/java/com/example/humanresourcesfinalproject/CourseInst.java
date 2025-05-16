@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -19,6 +20,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.example.humanresourcesfinalproject.model.ClickHandlerUtil;
 import com.example.humanresourcesfinalproject.model.User;
 import com.example.humanresourcesfinalproject.model.UserAdapter;
 import com.google.android.material.navigation.NavigationView;
@@ -55,7 +57,6 @@ public class CourseInst extends AppCompatActivity implements NavigationView.OnNa
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -65,7 +66,17 @@ public class CourseInst extends AppCompatActivity implements NavigationView.OnNa
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
+        // Initialize ListView and SearchView
+        lvUser = findViewById(R.id.lvCourseInst);
         searchView = findViewById(R.id.SvCourseInst);
+
+        if (lvUser == null) {
+            Toast.makeText(this, "ListView not found!", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        // Set up search functionality
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -82,70 +93,86 @@ public class CourseInst extends AppCompatActivity implements NavigationView.OnNa
         });
 
         Button goBackBtn = findViewById(R.id.GoBackCourseInst);
-        goBackBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Go back to MyLists
-                Intent intent = new Intent(CourseInst.this, MyLists.class);
-                startActivity(intent);
-                finish(); // Finish the current activity
-            }
+        goBackBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(CourseInst.this, MyLists.class);
+            startActivity(intent);
+            finish();
         });
 
-        lvUser = findViewById(R.id.lvCourseInst);
+        // Initialize Firebase
         database = FirebaseDatabase.getInstance();
-
-        takeit = getIntent();
-        courseId = takeit.getStringExtra("courseId");
+        courseId = getIntent().getStringExtra("courseId");
 
         if (courseId != null) {
-            myUserRefCoures = database.getReference("EnrollCourses2").child(courseId);
-            users.clear();
+            loadInstructorsFromFirebase();
+        } else {
+            Toast.makeText(this, "No course ID provided", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+    private void loadInstructorsFromFirebase() {
+        myUserRefCoures = database.getReference("EnrollCourses2").child(courseId);
+        users.clear();
 
-            myUserRefCoures.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    for (DataSnapshot i : snapshot.getChildren()) {
-                        User user = i.getValue(User.class);
-                        if (user != null && (user.getIsTeacher() != null && user.getIsTeacher() ||
-                                user.getIsGuide() != null && user.getIsGuide())) {
-                            users.add(user);
+        myUserRefCoures.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot i : snapshot.getChildren()) {
+                    User user = i.getValue(User.class);
+                    if (user != null && (Boolean.TRUE.equals(user.getIsTeacher()) || Boolean.TRUE.equals(user.getIsGuide()))) {
+                        users.add(user);
+                    }
+                }
+
+                if (users.isEmpty()) {
+                    Toast.makeText(CourseInst.this, "No instructors found in this course", Toast.LENGTH_SHORT).show();
+                }
+
+                userAdapter = new UserAdapter(CourseInst.this, 0, users);
+                lvUser.setAdapter(userAdapter);
+
+                // Set up click listeners AFTER the adapter is set
+                ClickHandlerUtil.setupListViewClicks(lvUser, new ClickHandlerUtil.ClickCallbacks() {
+                    @Override
+                    public void onShortClick(int position) {
+                        User selectedUser = userAdapter.getItem(position);
+                        if (selectedUser != null) {
+                            Intent intent = new Intent(CourseInst.this, UserInfo.class);
+                            intent.putExtra("userId", selectedUser.getId());
+                            startActivity(intent);
                         }
                     }
 
-                    userAdapter = new UserAdapter(CourseInst.this, 0, users);
-                    lvUser.setAdapter(userAdapter);
-                }
+                    @Override
+                    public void onLongClick(int position) {
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-                    // Handle errors
-                }
-            });
-        }
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(CourseInst.this, "Failed to load instructors: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         if (id == R.id.nav_course_comprehensive) {
-            Intent intent = new Intent(this, ChooseYourCourse.class);
-            startActivity(intent);
+            startActivity(new Intent(this, ChooseYourCourse.class));
         } else if (id == R.id.nav_course_health) {
-            Intent intent = new Intent(this, ChooseYourCourseHealth.class);
-            startActivity(intent);
+            startActivity(new Intent(this, ChooseYourCourseHealth.class));
         } else if (id == R.id.nav_CourseInst) {
-            Intent intent = new Intent(this, ChooseYourCourseInstructors.class);
-            startActivity(intent);
+            startActivity(new Intent(this, ChooseYourCourseInstructors.class));
         } else if (id == R.id.nav_school_comprehensive) {
-            Intent intent = new Intent(this, SchoolComp.class);
-            startActivity(intent);
+            startActivity(new Intent(this, SchoolComp.class));
         } else if (id == R.id.nav_instructors) {
-            Intent intent = new Intent(this, SchoolInst.class);
-            startActivity(intent);
+            startActivity(new Intent(this, SchoolInst.class));
         } else if (id == R.id.nav_school_health) {
-            Intent intent = new Intent(this, SchoolHealth.class);
-            startActivity(intent);
+            startActivity(new Intent(this, SchoolHealth.class));
         }
 
         drawerLayout.closeDrawer(GravityCompat.START);
