@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".CourseInst">
+
+  <!-- Main Content -->
+  <androidx.constraintlayout.widget.ConstraintLayout
+      android:id="@+id/main"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="#F5E7CF">
+
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="11dp"
+        android:background="#F5E7CF"
+        app:layout_constraintBottom_toTopOf="@+id/GoBackCourseInst"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:title="Course Instructors &amp; Guides"
+        app:titleTextColor="#F5E7CF" />
+
+    <!-- Add SearchView here -->
+    <SearchView
+        android:id="@+id/SvCourseInst"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        android:iconifiedByDefault="false"
+        android:queryHint="Search instructors &amp; guides..."
+        app:layout_constraintBottom_toTopOf="@+id/lvCourseInst"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView7" />
+
+    <ListView
+        android:id="@+id/lvCourseInst"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/SvCourseInst" />
+
+    <Button
+        android:id="@+id/GoBackCourseInst"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="46dp"
+        android:layout_marginBottom="29dp"
+        android:backgroundTint="#3c3d37"
+        android:text="Go Back"
+        app:layout_constraintBottom_toTopOf="@+id/textView7"
+        app:layout_constraintEnd_toStartOf="@+id/imageView11"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+    <ImageView
+        android:id="@+id/imageView11"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="11dp"
+        android:layout_marginEnd="164dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/textView7"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/GoBackCourseInst"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:srcCompat="@drawable/logo" />
+
+    <TextView
+        android:id="@+id/textView7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="8dp"
+        android:text="Course Instructors &amp; Guides"
+        android:textSize="30dp"
+        app:layout_constraintBottom_toTopOf="@+id/SvCourseInst"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/GoBackCourseInst" />
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
+
+  <!-- Navigation Drawer -->
+  <com.google.android.material.navigation.NavigationView
+      android:id="@+id/nav_view"
+      android:layout_width="wrap_content"
+      android:layout_height="match_parent"
+      android:layout_gravity="start"
+      app:menu="@menu/my_lists_drawer_menu"
+      app:headerLayout="@layout/my_lists_nav_header" />
+
+</androidx.drawerlayout.widget.DrawerLayout>

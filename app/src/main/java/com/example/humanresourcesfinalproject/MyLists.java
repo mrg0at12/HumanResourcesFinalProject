@@ -74,6 +74,18 @@ public class MyLists extends AppCompatActivity implements NavigationView.OnNavig
         });
 
 
+        Button InstrouctorsCourse=findViewById(R.id.btnInstroucturs2);
+        InstrouctorsCourse.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Go back to StartPage
+                Intent intent = new Intent(MyLists.this, ChooseYourCourseInstructors.class);
+                startActivity(intent);
+                finish(); // Finish the current activity (LoginActivity)
+            }
+        });
+
+
 
         Button goBackBtn = findViewById(R.id.GoBackMyLists);
         goBackBtn.setOnClickListener(new View.OnClickListener() {
