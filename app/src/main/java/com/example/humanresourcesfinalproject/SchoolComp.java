@@ -168,23 +168,94 @@ public class SchoolComp extends AppCompatActivity implements NavigationView.OnNa
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 schoolMembersList.clear();
+                ArrayList<User> tempList = new ArrayList<>();
+
                 for (DataSnapshot data : snapshot.getChildren()) {
                     User user = data.getValue(User.class);
-                    if (user != null && user.getSchool() != null &&
-                            user.getSchool().equals(currentUserSchool)) {
-                        schoolMembersList.add(user);
+                    if (isValidSchoolMember(user)) {
+                        tempList.add(user);
                     }
                 }
-                userAdapter.updateList(schoolMembersList);
 
-                if (schoolMembersList.isEmpty()) {
-                    Toast.makeText(SchoolComp.this, "No members found in your school", Toast.LENGTH_SHORT).show();
-                }
+                // Now verify each user exists in main Users table
+                verifyUsersInMainTable(tempList);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(SchoolComp.this, "Failed to load users", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private boolean isValidSchoolMember(User user) {
+        if (user == null) return false;
+        if (isAdminUser(user)) return false;
+        if (user.getId() == null || user.getId().isEmpty() ||
+                user.getFname() == null || user.getFname().isEmpty() ||
+                user.getLname() == null || user.getLname().isEmpty() ||
+                user.getPhone() == null || user.getPhone().isEmpty() ||
+                user.getKidId() == null || user.getKidId().isEmpty()) {
+            return false;
+        }
+        if ("null".equalsIgnoreCase(user.getFname()) || "null".equalsIgnoreCase(user.getLname())) {
+            return false;
+        }
+        return user.getSchool() != null && user.getSchool().equals(currentUserSchool);
+    }
+
+    private boolean isAdminUser(User user) {
+        return (user.getFname() == null && user.getLname() == null) ||
+                (user.getFname() != null && user.getFname().equals("null") &&
+                        user.getLname() != null && user.getLname().equals("null"));
+    }
+
+    private void verifyUsersInMainTable(ArrayList<User> tempList) {
+        ArrayList<User> verifiedUsers = new ArrayList<>();
+        final int[] counter = {0};
+
+        if (tempList.isEmpty()) {
+            updateUI(verifiedUsers);
+            return;
+        }
+
+        for (User user : tempList) {
+            usersRef.child(user.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        User mainUser = snapshot.getValue(User.class);
+                        if (isValidSchoolMember(mainUser)) {
+                            verifiedUsers.add(mainUser);
+                        }
+                    }
+
+                    counter[0]++;
+                    if (counter[0] == tempList.size()) {
+                        updateUI(verifiedUsers);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    counter[0]++;
+                    if (counter[0] == tempList.size()) {
+                        updateUI(verifiedUsers);
+                    }
+                }
+            });
+        }
+    }
+
+    private void updateUI(ArrayList<User> verifiedUsers) {
+        runOnUiThread(() -> {
+            schoolMembersList.clear();
+            schoolMembersList.addAll(verifiedUsers);
+            userAdapter.updateList(schoolMembersList);
+
+            if (schoolMembersList.isEmpty()) {
+                Toast.makeText(SchoolComp.this, "No valid members found in your school",
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }

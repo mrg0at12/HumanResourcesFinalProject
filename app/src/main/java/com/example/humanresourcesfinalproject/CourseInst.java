@@ -1,7 +1,10 @@
 package com.example.humanresourcesfinalproject;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -55,28 +58,46 @@ public class CourseInst extends AppCompatActivity implements NavigationView.OnNa
             return insets;
         });
 
+        initializeViews();
+        setupNavigation();
+        setupSearchView();
+        setupButtonListeners();
+
+        database = FirebaseDatabase.getInstance();
+        courseId = getIntent().getStringExtra("courseId");
+
+        if (courseId != null) {
+            loadInstructorsFromFirebase();
+        } else {
+            Toast.makeText(this, "No course ID provided", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+    private void initializeViews() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         drawerLayout = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
-        // Initialize ListView and SearchView
         lvUser = findViewById(R.id.lvCourseInst);
         searchView = findViewById(R.id.SvCourseInst);
 
         if (lvUser == null) {
             Toast.makeText(this, "ListView not found!", Toast.LENGTH_SHORT).show();
             finish();
-            return;
         }
+    }
 
-        // Set up search functionality
+    private void setupNavigation() {
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, findViewById(R.id.toolbar),
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+    }
+
+    private void setupSearchView() {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -88,55 +109,95 @@ public class CourseInst extends AppCompatActivity implements NavigationView.OnNa
                 if (userAdapter != null) {
                     userAdapter.getFilter().filter(newText);
                 }
-                return false;
+                return true;
             }
         });
+    }
 
+    private void setupButtonListeners() {
         Button goBackBtn = findViewById(R.id.GoBackCourseInst);
         goBackBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(CourseInst.this, MyLists.class);
-            startActivity(intent);
+            startActivity(new Intent(CourseInst.this, MyLists.class));
             finish();
         });
-
-        // Initialize Firebase
-        database = FirebaseDatabase.getInstance();
-        courseId = getIntent().getStringExtra("courseId");
-
-        if (courseId != null) {
-            loadInstructorsFromFirebase();
-        } else {
-            Toast.makeText(this, "No course ID provided", Toast.LENGTH_SHORT).show();
-            finish();
-        }
     }
+
     private void loadInstructorsFromFirebase() {
         myUserRefCoures = database.getReference("EnrollCourses2").child(courseId);
+        DatabaseReference usersRef = database.getReference("Users");
         users.clear();
 
         myUserRefCoures.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot i : snapshot.getChildren()) {
-                    User user = i.getValue(User.class);
-                    if (user != null && (Boolean.TRUE.equals(user.getIsTeacher()) || Boolean.TRUE.equals(user.getIsGuide()))) {
-                        users.add(user);
+                users.clear();
+
+                for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                    User enrolledUser = userSnapshot.getValue(User.class);
+
+                    if (isValidInstructor(enrolledUser)) {
+                        // Check if user still exists in main Users table
+                        usersRef.child(enrolledUser.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot userSnapshot) {
+                                if (userSnapshot.exists()) {
+                                    User mainUser = userSnapshot.getValue(User.class);
+                                    if (isValidInstructor(mainUser)) {
+                                        users.add(mainUser);
+                                        updateUI();
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+                                Log.e(TAG, "Failed to check user in main table: " + error.getMessage());
+                            }
+                        });
                     }
                 }
+            }
 
-                if (users.isEmpty()) {
-                    Toast.makeText(CourseInst.this, "No instructors found in this course", Toast.LENGTH_SHORT).show();
-                }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(CourseInst.this, "Failed to load instructors: " + error.getMessage(),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
+    private boolean isValidInstructor(User user) {
+        if (user == null) return false;
+        if (isAdminUser(user)) return false;
+        if (user.getId() == null || user.getId().isEmpty() ||
+                user.getFname() == null || user.getFname().isEmpty() ||
+                user.getLname() == null || user.getLname().isEmpty()) {
+            return false;
+        }
+        // Check if user is either teacher or guide
+        return Boolean.TRUE.equals(user.getIsTeacher()) || Boolean.TRUE.equals(user.getIsGuide());
+    }
+
+    private boolean isAdminUser(User user) {
+        return (user.getFname() == null && user.getLname() == null) ||
+                (user.getFname() != null && user.getFname().equals("null") &&
+                        user.getLname() != null && user.getLname().equals("null"));
+    }
+
+    private void updateUI() {
+        runOnUiThread(() -> {
+            if (users.isEmpty()) {
+                Toast.makeText(CourseInst.this, "No instructors found in this course",
+                        Toast.LENGTH_SHORT).show();
+            } else {
                 userAdapter = new UserAdapter(CourseInst.this, 0, users);
                 lvUser.setAdapter(userAdapter);
 
-                // Set up click listeners AFTER the adapter is set
                 ClickHandlerUtil.setupListViewClicks(lvUser, new ClickHandlerUtil.ClickCallbacks() {
                     @Override
                     public void onShortClick(int position) {
                         User selectedUser = userAdapter.getItem(position);
-                        if (selectedUser != null) {
+                        if (selectedUser != null && selectedUser.getId() != null) {
                             Intent intent = new Intent(CourseInst.this, UserInfo.class);
                             intent.putExtra("userId", selectedUser.getId());
                             startActivity(intent);
@@ -145,14 +206,9 @@ public class CourseInst extends AppCompatActivity implements NavigationView.OnNa
 
                     @Override
                     public void onLongClick(int position) {
-
+                        // Handle long click if needed
                     }
                 });
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(CourseInst.this, "Failed to load instructors: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

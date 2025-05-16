@@ -1,5 +1,7 @@
 package com.example.humanresourcesfinalproject;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -32,7 +34,6 @@ public class ChooseYourCourseInstructors extends AppCompatActivity {
     private ListView lvCourses;
     private DatabaseReference enrollUsersReference, userReference;
     private FirebaseUser currentUser;
-    private ArrayList<String> courseIds;
     private User user = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,23 +45,27 @@ public class ChooseYourCourseInstructors extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        initializeViews();
+        setupFirebaseReferences();
+        loadUserData();
+        getCoursesFromFirebase();
+        setupButtonListeners();
+    }
+    private void initializeViews() {
         goBack = findViewById(R.id.btnCancelIns);
         lvCourses = findViewById(R.id.courseListViewIns);
+    }
 
-
-
+    private void setupFirebaseReferences() {
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        enrollUsersReference = FirebaseDatabase.getInstance().getReference("EnrollForUsers2").child(currentUser.getUid());
+        if (currentUser != null) {
+            enrollUsersReference = FirebaseDatabase.getInstance().getReference("EnrollForUsers2").child(currentUser.getUid());
+        }
+    }
 
-        getCoursesFromFirebase();
-
-        goBack.setOnClickListener(v -> {
-            startActivity(new Intent(ChooseYourCourseInstructors.this, MainPage.class));
-            finish();
-        });
-
+    private void loadUserData() {
         if (currentUser != null) {
             String userId = currentUser.getUid();
             userReference.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -68,6 +73,9 @@ public class ChooseYourCourseInstructors extends AppCompatActivity {
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if (snapshot.exists()) {
                         user = snapshot.getValue(User.class);
+                        if (user != null && user.getId() == null) {
+                            user.setId(userId);
+                        }
                     }
                 }
 
@@ -78,19 +86,25 @@ public class ChooseYourCourseInstructors extends AppCompatActivity {
             });
         }
     }
+
     private void getCoursesFromFirebase() {
+        if (enrollUsersReference == null) {
+            Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
         enrollUsersReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 ArrayList<Course> courses = new ArrayList<>();
 
-
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Course course = snapshot.getValue(Course.class);
                     if (course != null) {
+                        course.setCourseId(snapshot.getKey());
                         courses.add(course);
-
-                        Log.d("courses", course.toString());
+                        Log.d(TAG, "Course loaded: " + course.toString());
                     }
                 }
 
@@ -104,26 +118,35 @@ public class ChooseYourCourseInstructors extends AppCompatActivity {
                     }
 
                     Course course = (Course) parent.getItemAtPosition(position);
-                    String courseId = course.getCourseId();
-
-
-                    if(user.getIsTeacher()){
-
-                        Intent go=new Intent(ChooseYourCourseInstructors.this, CourseInst.class);
-
-                        go.putExtra("courseId",courseId);
-                        startActivity(go);
-
+                    if (course == null || course.getCourseId() == null) {
+                        Toast.makeText(ChooseYourCourseInstructors.this, "Course information invalid", Toast.LENGTH_SHORT).show();
+                        return;
                     }
 
+                    navigateToCourseInstructors(course.getCourseId());
                 });
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                Log.e(TAG, "Failed to load courses: " + databaseError.getMessage());
+                Toast.makeText(ChooseYourCourseInstructors.this, "Failed to load courses", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
+    private void navigateToCourseInstructors(String courseId) {
+        Intent intent = new Intent(ChooseYourCourseInstructors.this, CourseInst.class);
+        intent.putExtra("courseId", courseId);
+        startActivity(intent);
+    }
+
+    private void setupButtonListeners() {
+        goBack.setOnClickListener(v -> {
+            startActivity(new Intent(ChooseYourCourseInstructors.this, MainPage.class));
+            finish();
+        });
+    }
 }
+
+

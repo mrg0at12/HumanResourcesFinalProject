@@ -2,6 +2,7 @@ package com.example.humanresourcesfinalproject;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -35,6 +36,8 @@ import java.util.ArrayList;
 
 public class CourseHealth extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private UserAdapter userAdapter;
+    private static final String TAG = "CourseHealth";
+
     private ListView lvUser;
     private TextView emptyView;
     private ArrayList<User> allUsers = new ArrayList<>();
@@ -46,7 +49,7 @@ public class CourseHealth extends AppCompatActivity implements NavigationView.On
     private String courseId = null;
 
     private FirebaseDatabase database;
-    private DatabaseReference myUserRefCourses;
+    private DatabaseReference myUserRefCourses,usersReference;
     private DrawerLayout drawerLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,18 +61,28 @@ public class CourseHealth extends AppCompatActivity implements NavigationView.On
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        initializeViews();
+        setupNavigation();
+        setupSearchView();
+        setupButtonListeners();
+
+        database = FirebaseDatabase.getInstance();
+        courseId = getIntent().getStringExtra("courseId");
+
+        usersReference = database.getReference("Users");
+
+        if (courseId != null) {
+            loadUsersWithHealthProblems();
+        } else {
+            Toast.makeText(this, "No course ID provided", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
+    }
+    private void initializeViews() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         drawerLayout = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
-        // Initialize ListView and SearchView
         lvUser = findViewById(R.id.lvCourseHealth);
         emptyView = findViewById(R.id.emptyView);
         searchView = findViewById(R.id.SvCourseHealth);
@@ -77,12 +90,22 @@ public class CourseHealth extends AppCompatActivity implements NavigationView.On
         if (lvUser == null) {
             Toast.makeText(this, "ListView not found!", Toast.LENGTH_SHORT).show();
             finish();
-            return;
         }
-
         lvUser.setEmptyView(emptyView);
+    }
 
-        // Set up search functionality
+    private void setupNavigation() {
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, findViewById(R.id.toolbar),
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+    }
+
+    private void setupSearchView() {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -97,77 +120,114 @@ public class CourseHealth extends AppCompatActivity implements NavigationView.On
                 return true;
             }
         });
+    }
 
+    private void setupButtonListeners() {
         Button goBackBtn = findViewById(R.id.GoBackCourseHealth);
         goBackBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(CourseHealth.this, MyLists.class);
-            startActivity(intent);
+            startActivity(new Intent(CourseHealth.this, MyLists.class));
             finish();
         });
-
-        // Initialize Firebase
-        database = FirebaseDatabase.getInstance();
-        courseId = getIntent().getStringExtra("courseId");
-
-        if (courseId != null) {
-            loadUsersFromFirebase();
-        } else {
-            Toast.makeText(this, "No course ID provided", Toast.LENGTH_SHORT).show();
-            finish();
-        }
     }
-    private void loadUsersFromFirebase() {
+
+    private void loadUsersWithHealthProblems() {
         myUserRefCourses = database.getReference("EnrollCourses2").child(courseId);
-        allUsers.clear();
         healthUsers.clear();
 
         myUserRefCourses.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot i : snapshot.getChildren()) {
-                    User user = i.getValue(User.class);
-                    if (user != null) {
-                        allUsers.add(user);
-                        if (hasHealthProblems(user)) {
-                            healthUsers.add(user);
-                        }
+                healthUsers.clear();
+
+                for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                    User user = userSnapshot.getValue(User.class);
+                    if (isValidUserWithHealthProblems(user)) {
+                        checkUserInMainTable(user);
                     }
-                }
-
-                if (healthUsers.isEmpty()) {
-                    emptyView.setText("No users with health problems found");
-                    emptyView.setVisibility(View.VISIBLE);
-                } else {
-                    emptyView.setVisibility(View.GONE);
-                    userAdapter = new UserAdapter(CourseHealth.this, 0, healthUsers);
-                    lvUser.setAdapter(userAdapter);
-
-                    // Set up click listeners AFTER the adapter is set
-                    ClickHandlerUtil.setupListViewClicks(lvUser, new ClickHandlerUtil.ClickCallbacks() {
-                        @Override
-                        public void onShortClick(int position) {
-                            User selectedUser = userAdapter.getItem(position);
-                            if (selectedUser != null) {
-                                Intent intent = new Intent(CourseHealth.this, UserInfo.class);
-                                intent.putExtra("userId", selectedUser.getId());
-                                startActivity(intent);
-                            }
-                        }
-
-                        @Override
-                        public void onLongClick(int position) {
-
-                        }
-                    });
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(CourseHealth.this, "Failed to load users: " + error.getMessage(),
-                        Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Failed to load users: " + error.getMessage());
+                Toast.makeText(CourseHealth.this, "Failed to load users", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void checkUserInMainTable(User user) {
+        if (user == null || user.getId() == null) return;
+
+        usersReference.child(user.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    // User exists in main Users table
+                    User mainUser = snapshot.getValue(User.class);
+                    if (mainUser != null && isValidUserWithHealthProblems(mainUser)) {
+                        healthUsers.add(mainUser);
+                        updateUI();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "Failed to check user in main table: " + error.getMessage());
+            }
+        });
+    }
+
+    private void updateUI() {
+        runOnUiThread(() -> {
+            if (healthUsers.isEmpty()) {
+                emptyView.setText("No students with health problems found");
+                emptyView.setVisibility(View.VISIBLE);
+            } else {
+                emptyView.setVisibility(View.GONE);
+                userAdapter = new UserAdapter(CourseHealth.this, 0, healthUsers);
+                lvUser.setAdapter(userAdapter);
+
+                ClickHandlerUtil.setupListViewClicks(lvUser, new ClickHandlerUtil.ClickCallbacks() {
+                    @Override
+                    public void onShortClick(int position) {
+                        User selectedUser = userAdapter.getItem(position);
+                        if (selectedUser != null && selectedUser.getId() != null) {
+                            Intent intent = new Intent(CourseHealth.this, UserInfo.class);
+                            intent.putExtra("userId", selectedUser.getId());
+                            startActivity(intent);
+                        }
+                    }
+
+                    @Override
+                    public void onLongClick(int position) {
+                        // Handle long click if needed
+                    }
+                });
+            }
+        });
+    }
+
+    private boolean isValidUserWithHealthProblems(User user) {
+        if (user == null) return false;
+        if (isAdminUser(user)) return false;
+        if (user.getId() == null || user.getId().isEmpty() ||
+                user.getFname() == null || user.getFname().isEmpty() ||
+                user.getLname() == null || user.getLname().isEmpty() ||
+                user.getPhone() == null || user.getPhone().isEmpty() ||
+                user.getKidId() == null || user.getKidId().isEmpty()) {
+            return false;
+        }
+        if ("null".equalsIgnoreCase(user.getFname()) || "null".equalsIgnoreCase(user.getLname())) {
+            return false;
+        }
+        return hasHealthProblems(user);
+    }
+
+    private boolean isAdminUser(User user) {
+        return (user.getFname() == null && user.getLname() == null) ||
+                (user.getFname() != null && user.getFname().equals("null") &&
+                        user.getLname() != null && user.getLname().equals("null"));
     }
 
     private boolean hasHealthProblems(User user) {
@@ -183,7 +243,7 @@ public class CourseHealth extends AppCompatActivity implements NavigationView.On
         if (id == R.id.nav_course_comprehensive) {
             startActivity(new Intent(this, ChooseYourCourse.class));
         } else if (id == R.id.nav_course_health) {
-            startActivity(new Intent(this, ChooseYourCourseHealth.class));
+            // Already in this activity
         } else if (id == R.id.nav_CourseInst) {
             startActivity(new Intent(this, ChooseYourCourseInstructors.class));
         } else if (id == R.id.nav_school_comprehensive) {
@@ -197,5 +257,4 @@ public class CourseHealth extends AppCompatActivity implements NavigationView.On
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
-
 }

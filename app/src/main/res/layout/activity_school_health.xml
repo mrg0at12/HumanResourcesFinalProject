@@ -24,7 +24,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:title="School Health"
-            app:titleTextColor="#3c3d37" />
+            app:titleTextColor="#F5E7CF" />
 
         <!-- Go Back Button (aligned with toolbar) -->
         <Button

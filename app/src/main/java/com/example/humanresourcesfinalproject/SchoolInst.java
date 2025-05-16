@@ -182,32 +182,103 @@ public class SchoolInst extends AppCompatActivity implements NavigationView.OnNa
             return;
         }
 
-        pendingQueries = 1; // We are making one query (Users)
-
         usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                instructorList.clear(); // Clear the list before adding new items
+                ArrayList<User> tempList = new ArrayList<>();
                 for (DataSnapshot data : snapshot.getChildren()) {
                     User user = data.getValue(User.class);
-                    if (user != null && user.getSchool().equals(currentUserSchool) &&
-                            (Boolean.TRUE.equals(user.getIsTeacher()) || Boolean.TRUE.equals(user.getIsGuide()))) {
-                        instructorList.add(user);
+                    if (isValidInstructor(user)) {
+                        tempList.add(user);
                     }
                 }
 
-                userAdapter.updateList(instructorList); // Use updateList instead of creating new adapter
-                checkQueriesComplete();
+                // Now verify each instructor exists in main Users table
+                verifyInstructorsInMainTable(tempList);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(SchoolInst.this, "Failed to load instructors.", Toast.LENGTH_SHORT).show();
-                checkQueriesComplete();
             }
         });
     }
 
+    private boolean isValidInstructor(User user) {
+        if (user == null) return false;
+        if (isAdminUser(user)) return false;
+        if (user.getId() == null || user.getId().isEmpty() ||
+                user.getFname() == null || user.getFname().isEmpty() ||
+                user.getLname() == null || user.getLname().isEmpty() ||
+                user.getPhone() == null || user.getPhone().isEmpty() ||
+                user.getKidId() == null || user.getKidId().isEmpty()) {
+            return false;
+        }
+        if ("null".equalsIgnoreCase(user.getFname()) || "null".equalsIgnoreCase(user.getLname())) {
+            return false;
+        }
+        if (user.getSchool() == null || !user.getSchool().equals(currentUserSchool)) {
+            return false;
+        }
+        return Boolean.TRUE.equals(user.getIsTeacher()) || Boolean.TRUE.equals(user.getIsGuide());
+    }
+
+    private boolean isAdminUser(User user) {
+        return (user.getFname() == null && user.getLname() == null) ||
+                (user.getFname() != null && user.getFname().equals("null") &&
+                        user.getLname() != null && user.getLname().equals("null"));
+    }
+
+    private void verifyInstructorsInMainTable(ArrayList<User> tempList) {
+        ArrayList<User> verifiedInstructors = new ArrayList<>();
+        final int[] counter = {0};
+
+        if (tempList.isEmpty()) {
+            updateUI(verifiedInstructors);
+            return;
+        }
+
+        for (User user : tempList) {
+            usersRef.child(user.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        User mainUser = snapshot.getValue(User.class);
+                        if (isValidInstructor(mainUser)) {
+                            verifiedInstructors.add(mainUser);
+                        }
+                    }
+
+                    counter[0]++;
+                    if (counter[0] == tempList.size()) {
+                        updateUI(verifiedInstructors);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    counter[0]++;
+                    if (counter[0] == tempList.size()) {
+                        updateUI(verifiedInstructors);
+                    }
+                }
+            });
+        }
+    }
+
+    private void updateUI(ArrayList<User> verifiedInstructors) {
+        runOnUiThread(() -> {
+            instructorList.clear();
+            instructorList.addAll(verifiedInstructors);
+            userAdapter.updateList(instructorList);
+
+            if (instructorList.isEmpty()) {
+                Toast.makeText(SchoolInst.this,
+                        "No valid instructors found in your school",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
     private void checkQueriesComplete() {
         pendingQueries--;
         if (pendingQueries == 0) {

@@ -1,5 +1,7 @@
 package com.example.humanresourcesfinalproject;
 
+import static android.content.ContentValues.TAG;
+
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -20,6 +22,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.humanresourcesfinalproject.model.Admin;
 import com.example.humanresourcesfinalproject.model.Course;
 import com.example.humanresourcesfinalproject.model.Enroll;
 import com.example.humanresourcesfinalproject.model.NotificationReceiver;
@@ -43,8 +46,8 @@ public class ChooseYourCourse extends AppCompatActivity {
     private ListView lvCourses;
     private DatabaseReference enrollUsersReference, userReference;
     private FirebaseUser currentUser;
-    private ArrayList<String> courseIds;
     private User user = null;
+    private boolean isAdmin = false;
 
 
     @Override
@@ -59,54 +62,75 @@ public class ChooseYourCourse extends AppCompatActivity {
         });
 
 
+        initializeViews();
+        setupFirebaseReferences();
+        loadUserData();
+        getCoursesFromFirebase();
+        setupButtonListeners();
+    }
+
+    private void initializeViews() {
         goBack = findViewById(R.id.btnCancel);
         lvCourses = findViewById(R.id.courseListView);
+    }
 
-
-
+    private void setupFirebaseReferences() {
         userReference = FirebaseDatabase.getInstance().getReference("Users");
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        enrollUsersReference = FirebaseDatabase.getInstance().getReference("EnrollForUsers2").child(currentUser.getUid());
+        if (currentUser != null) {
+            enrollUsersReference = FirebaseDatabase.getInstance().getReference("EnrollForUsers2").child(currentUser.getUid());
+        }
+    }
 
-        getCoursesFromFirebase();
-
-        goBack.setOnClickListener(v -> {
-            startActivity(new Intent(ChooseYourCourse.this, MainPage.class));
-            finish();
-        });
-
+    private void loadUserData() {
         if (currentUser != null) {
             String userId = currentUser.getUid();
             userReference.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if (snapshot.exists()) {
+                        // Check for admin first
+                        if (snapshot.hasChild("isAdmin")) {
+                            Boolean adminStatus = snapshot.child("isAdmin").getValue(Boolean.class);
+                            if (adminStatus != null && adminStatus) {
+                                user = snapshot.getValue(Admin.class);
+                                isAdmin = true;
+                                return;
+                            }
+                        }
+                        // If not admin, load as regular user
                         user = snapshot.getValue(User.class);
                     }
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
-                    Toast.makeText(ChooseYourCourse.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Database error: " + error.getMessage());
+                    Toast.makeText(ChooseYourCourse.this, "Database error", Toast.LENGTH_SHORT).show();
                 }
             });
         }
     }
 
     private void getCoursesFromFirebase() {
+        if (enrollUsersReference == null) {
+            Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
         enrollUsersReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 ArrayList<Course> courses = new ArrayList<>();
 
-
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Course course = snapshot.getValue(Course.class);
                     if (course != null) {
+                        course.setCourseId(snapshot.getKey()); // Ensure course has ID
                         courses.add(course);
-
-                        Log.d("courses", course.toString());
+                        Log.d(TAG, "Course loaded: " + course.toString());
                     }
                 }
 
@@ -120,27 +144,34 @@ public class ChooseYourCourse extends AppCompatActivity {
                     }
 
                     Course course = (Course) parent.getItemAtPosition(position);
-                    String courseId = course.getCourseId();
-
-
-                    if(user.getIsTeacher()){
-
-                        Intent go=new Intent(ChooseYourCourse.this, CourseCompList.class);
-
-                        go.putExtra("courseId",courseId);
-                        startActivity(go);
-
+                    if (course == null || course.getCourseId() == null) {
+                        Toast.makeText(ChooseYourCourse.this, "Course information invalid", Toast.LENGTH_SHORT).show();
+                        return;
                     }
 
+                    navigateToCourseList(course.getCourseId());
                 });
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                Log.e(TAG, "Failed to load courses: " + databaseError.getMessage());
+                Toast.makeText(ChooseYourCourse.this, "Failed to load courses", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
+    private void navigateToCourseList(String courseId) {
+        Intent intent = new Intent(ChooseYourCourse.this, CourseCompList.class);
+        intent.putExtra("courseId", courseId);
+        startActivity(intent);
+    }
+
+    private void setupButtonListeners() {
+        goBack.setOnClickListener(v -> {
+            startActivity(new Intent(ChooseYourCourse.this, MainPage.class));
+            finish();
+        });
+    }
 
 }
