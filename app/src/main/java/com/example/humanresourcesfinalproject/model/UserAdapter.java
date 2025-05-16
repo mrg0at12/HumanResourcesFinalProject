@@ -27,8 +27,8 @@ public class UserAdapter extends ArrayAdapter<User> {
     public UserAdapter(@NonNull Context context, int resource, @NonNull List<User> objects) {
         super(context, 0, objects);
         this.context = context;
-        this.userList = new ArrayList<>(objects);
-        this.filteredUserList = new ArrayList<>(objects);
+        this.userList = new ArrayList<>(objects); // Original list
+        this.filteredUserList = new ArrayList<>(objects); // Filtered list
     }
 
     @NonNull
@@ -52,11 +52,17 @@ public class UserAdapter extends ArrayAdapter<User> {
 
         User user = filteredUserList.get(position);
 
+        // Display user details with emojis
         holder.rowUserName.setText("👤 " + user.getFname() + " " + user.getLname());
         holder.rowUserPhone.setText("📞 " + user.getPhone());
         holder.rowUserID.setText("🆔 " + user.getKidId());
 
-        // Remove the click listener from the item view - we'll handle clicks at the ListView level
+        // Row click → open UserInfo
+        convertView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, UserInfo.class);
+            intent.putExtra("userId", user.getId()); // Passing user ID to the next screen
+            context.startActivity(intent);
+        });
 
         return convertView;
     }
@@ -108,8 +114,6 @@ public class UserAdapter extends ArrayAdapter<User> {
             }
         };
     }
-
-    // New method to update the lists
     public void updateList(List<User> newList) {
         userList.clear();
         userList.addAll(newList);
@@ -117,7 +121,6 @@ public class UserAdapter extends ArrayAdapter<User> {
         filteredUserList.addAll(newList);
         notifyDataSetChanged();
     }
-
     static class ViewHolder {
         TextView rowUserName;
         TextView rowUserPhone;
