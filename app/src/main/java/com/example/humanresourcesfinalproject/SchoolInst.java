@@ -21,6 +21,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.example.humanresourcesfinalproject.model.Admin;
 import com.example.humanresourcesfinalproject.model.User;
 import com.example.humanresourcesfinalproject.model.UserAdapter;
 import com.google.android.material.navigation.NavigationView;
@@ -45,6 +46,7 @@ public class SchoolInst extends AppCompatActivity implements NavigationView.OnNa
     private SearchView searchView;
     private int pendingQueries = 0;
     private DrawerLayout drawerLayout;
+    private boolean isCurrentUserAdmin = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,20 +58,24 @@ public class SchoolInst extends AppCompatActivity implements NavigationView.OnNa
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        initializeViews();
+        setupNavigation();
+        setupSearchView();
+        setupButtonListeners();
+
+        auth = FirebaseAuth.getInstance();
+        usersRef = FirebaseDatabase.getInstance().getReference("Users");
+
+        checkIfUserIsAdmin();
+    }
+
+    private void initializeViews() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         drawerLayout = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
 
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
-        searchView = findViewById(R.id.SvSchoolInst);
         listView = findViewById(R.id.instructorListView);
+        searchView = findViewById(R.id.SvSchoolInst);
         instructorList = new ArrayList<>();
         userAdapter = new UserAdapter(this, 0, instructorList);
 
@@ -89,12 +95,20 @@ public class SchoolInst extends AppCompatActivity implements NavigationView.OnNa
         });
 
         listView.setAdapter(userAdapter);
+    }
 
-        auth = FirebaseAuth.getInstance();
-        usersRef = FirebaseDatabase.getInstance().getReference("Users");
+    private void setupNavigation() {
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
 
-        fetchCurrentUserSchool();
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, findViewById(R.id.toolbar),
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+    }
 
+    private void setupSearchView() {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -107,7 +121,9 @@ public class SchoolInst extends AppCompatActivity implements NavigationView.OnNa
                 return false;
             }
         });
+    }
 
+    private void setupButtonListeners() {
         Button goBackBtn = findViewById(R.id.btnGoBackInst);
         goBackBtn.setOnClickListener(v -> {
             Intent intent = new Intent(SchoolInst.this, MyLists.class);
@@ -116,64 +132,58 @@ public class SchoolInst extends AppCompatActivity implements NavigationView.OnNa
         });
     }
 
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.nav_course_comprehensive) {
-            Intent intent = new Intent(this, ChooseYourCourse.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_course_health) {
-            Intent intent = new Intent(this, ChooseYourCourseHealth.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_CourseInst) {
-            Intent intent = new Intent(this, ChooseYourCourseInstructors.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_school_comprehensive) {
-            Intent intent = new Intent(this, SchoolComp.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_instructors) {
-            Intent intent = new Intent(this, SchoolInst.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_school_health) {
-            // Already in this activity
-            drawerLayout.closeDrawer(GravityCompat.START);
-        }
-
-        drawerLayout.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    private void fetchCurrentUserSchool() {
+    private void checkIfUserIsAdmin() {
         String userId = auth.getCurrentUser().getUid();
-        if (userId != null) {
-            usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
+        // First check if the user is in the regular Users table
+        usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
                     User user = snapshot.getValue(User.class);
-                    if (user != null) {
+                    if (user != null && user.getSchool() != null) {
                         currentUserSchool = user.getSchool();
                         fetchInstructors();
                     } else {
-                        Toast.makeText(SchoolInst.this, "User data not found", Toast.LENGTH_SHORT).show();
+                        // Check if they're in the Admin table instead
+                        checkAdminTable(userId);
                     }
+                } else {
+                    // If not in Users table, check Admin table
+                    checkAdminTable(userId);
                 }
+            }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-                    Toast.makeText(SchoolInst.this, "Failed to fetch user school", Toast.LENGTH_SHORT).show();
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(SchoolInst.this, "Failed to fetch user data: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void checkAdminTable(String userId) {
+        DatabaseReference adminRef = FirebaseDatabase.getInstance().getReference("Admins").child(userId);
+        adminRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    Admin admin = snapshot.getValue(Admin.class);
+                    isCurrentUserAdmin = true;
+                    if (admin != null && admin.getSchool() != null) {
+                        currentUserSchool = admin.getSchool();
+                        fetchInstructors(); // Admin will see their school's instructors
+                    } else {
+                        Toast.makeText(SchoolInst.this, "Admin school not found", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(SchoolInst.this, "User data not found in any table", Toast.LENGTH_SHORT).show();
                 }
-            });
-        }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(SchoolInst.this, "Failed to fetch admin data: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void fetchInstructors() {
@@ -274,17 +284,46 @@ public class SchoolInst extends AppCompatActivity implements NavigationView.OnNa
 
             if (instructorList.isEmpty()) {
                 Toast.makeText(SchoolInst.this,
-                        "No valid instructors found in your school",
+                        "No valid instructors found in " + (isCurrentUserAdmin ? "admin" : "your") + " school",
                         Toast.LENGTH_SHORT).show();
             }
         });
     }
-    private void checkQueriesComplete() {
-        pendingQueries--;
-        if (pendingQueries == 0) {
-            if (instructorList.isEmpty()) {
-                Toast.makeText(SchoolInst.this, "No instructors found.", Toast.LENGTH_SHORT).show();
-            }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.nav_course_comprehensive) {
+            Intent intent = new Intent(this, ChooseYourCourse.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_course_health) {
+            Intent intent = new Intent(this, ChooseYourCourseHealth.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_CourseInst) {
+            Intent intent = new Intent(this, ChooseYourCourseInstructors.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_school_comprehensive) {
+            Intent intent = new Intent(this, SchoolComp.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_instructors) {
+            // Already in this activity
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else if (id == R.id.nav_school_health) {
+            Intent intent = new Intent(this, SchoolHealth.class);
+            startActivity(intent);
+        }
+
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
         }
     }
 }

@@ -21,6 +21,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.example.humanresourcesfinalproject.model.Admin;
 import com.example.humanresourcesfinalproject.model.User;
 import com.example.humanresourcesfinalproject.model.UserAdapter;
 import com.google.android.material.navigation.NavigationView;
@@ -38,11 +39,13 @@ public class SchoolHealth extends AppCompatActivity implements  NavigationView.O
     private ListView listView;
     private UserAdapter userAdapter;
     private ArrayList<User> healthIssueList;
-    private DatabaseReference databaseReference;
+    private DatabaseReference usersRef;
     private String currentUserSchool = "";
     private FirebaseAuth auth;
     private SearchView searchView;
     private DrawerLayout drawerLayout;
+    private boolean isCurrentUserAdmin = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,24 +57,26 @@ public class SchoolHealth extends AppCompatActivity implements  NavigationView.O
             return insets;
         });
 
+        initializeViews();
+        setupNavigation();
+        setupSearchView();
+        setupButtonListeners();
+
+        auth = FirebaseAuth.getInstance();
+        usersRef = FirebaseDatabase.getInstance().getReference("Users");
+        checkIfUserIsAdmin();
+    }
+    private void initializeViews() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         drawerLayout = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
 
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
-        searchView = findViewById(R.id.SvSchoolHealth);
         listView = findViewById(R.id.healthListView);
+        searchView = findViewById(R.id.SvSchoolHealth);
         healthIssueList = new ArrayList<>();
         userAdapter = new UserAdapter(this, 0, healthIssueList);
 
-        // Set up the click listener for user items
+        // Set up the interaction listener
         userAdapter.setOnUserInteractionListener(new UserAdapter.OnUserInteractionListener() {
             @Override
             public void onUserClick(User user) {
@@ -87,11 +92,20 @@ public class SchoolHealth extends AppCompatActivity implements  NavigationView.O
         });
 
         listView.setAdapter(userAdapter);
+    }
 
-        auth = FirebaseAuth.getInstance();
-        databaseReference = FirebaseDatabase.getInstance().getReference("Users");
+    private void setupNavigation() {
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
 
-        // Set up search functionality
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, findViewById(R.id.toolbar),
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+    }
+
+    private void setupSearchView() {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -104,67 +118,68 @@ public class SchoolHealth extends AppCompatActivity implements  NavigationView.O
                 return false;
             }
         });
+    }
 
+    private void setupButtonListeners() {
         Button goBackBtn = findViewById(R.id.GoBackHealthSchool);
         goBackBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(SchoolHealth.this, MyLists.class);
-            startActivity(intent);
+            startActivity(new Intent(SchoolHealth.this, MyLists.class));
             finish();
         });
-
-        fetchCurrentUserSchool();
-    }
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.nav_course_comprehensive) {
-            startActivity(new Intent(this, ChooseYourCourse.class));
-        } else if (id == R.id.nav_course_health) {
-            startActivity(new Intent(this, ChooseYourCourseHealth.class));
-        } else if (id == R.id.nav_CourseInst) {
-            startActivity(new Intent(this, ChooseYourCourseInstructors.class));
-        } else if (id == R.id.nav_school_comprehensive) {
-            startActivity(new Intent(this, SchoolComp.class));
-        } else if (id == R.id.nav_instructors) {
-            startActivity(new Intent(this, SchoolInst.class));
-        }
-
-        drawerLayout.closeDrawer(GravityCompat.START);
-        return true;
     }
 
-    @Override
-    public void onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    private void fetchCurrentUserSchool() {
-        FirebaseUser currentUser = auth.getCurrentUser();
-        if (currentUser != null) {
-            String userId = currentUser.getUid();
-            databaseReference.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
+    private void checkIfUserIsAdmin() {
+        String userId = auth.getCurrentUser().getUid();
+        // First check if the user is in the regular Users table
+        usersRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
                     User user = snapshot.getValue(User.class);
-                    if (user != null) {
+                    if (user != null && user.getSchool() != null) {
                         currentUserSchool = user.getSchool();
                         fetchUsersWithHealthIssues();
                     } else {
-                        Toast.makeText(SchoolHealth.this, "User data not found", Toast.LENGTH_SHORT).show();
+                        // Check if they're in the Admin table instead
+                        checkAdminTable(userId);
                     }
+                } else {
+                    // If not in Users table, check Admin table
+                    checkAdminTable(userId);
                 }
+            }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-                    Toast.makeText(SchoolHealth.this, "Failed to fetch user school", Toast.LENGTH_SHORT).show();
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(SchoolHealth.this, "Failed to fetch user data: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void checkAdminTable(String userId) {
+        DatabaseReference adminRef = FirebaseDatabase.getInstance().getReference("Admins").child(userId);
+        adminRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    Admin admin = snapshot.getValue(Admin.class);
+                    isCurrentUserAdmin = true;
+                    if (admin != null && admin.getSchool() != null) {
+                        currentUserSchool = admin.getSchool();
+                        fetchUsersWithHealthIssues(); // Admin will see their school's members with health issues
+                    } else {
+                        Toast.makeText(SchoolHealth.this, "Admin school not found", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(SchoolHealth.this, "User data not found in any table", Toast.LENGTH_SHORT).show();
                 }
-            });
-        }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(SchoolHealth.this, "Failed to fetch admin data: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void fetchUsersWithHealthIssues() {
@@ -173,7 +188,7 @@ public class SchoolHealth extends AppCompatActivity implements  NavigationView.O
             return;
         }
 
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+        usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 ArrayList<User> tempList = new ArrayList<>();
@@ -196,8 +211,9 @@ public class SchoolHealth extends AppCompatActivity implements  NavigationView.O
     }
 
     private boolean isValidUserWithHealthIssues(User user) {
+        // Basic validation of user data
         if (user == null) return false;
-        if (isAdminUser(user)) return false;
+
         if (user.getId() == null || user.getId().isEmpty() ||
                 user.getFname() == null || user.getFname().isEmpty() ||
                 user.getLname() == null || user.getLname().isEmpty() ||
@@ -205,22 +221,21 @@ public class SchoolHealth extends AppCompatActivity implements  NavigationView.O
                 user.getKidId() == null || user.getKidId().isEmpty()) {
             return false;
         }
+
         if ("null".equalsIgnoreCase(user.getFname()) || "null".equalsIgnoreCase(user.getLname())) {
             return false;
         }
+
+        // Verify the user belongs to the current user's school
         if (user.getSchool() == null || !user.getSchool().equals(currentUserSchool)) {
             return false;
         }
+
+        // Check health problems
         String healthProblems = user.getHealthProblems();
         return healthProblems != null &&
                 !healthProblems.equalsIgnoreCase("None") &&
                 !healthProblems.trim().isEmpty();
-    }
-
-    private boolean isAdminUser(User user) {
-        return (user.getFname() == null && user.getLname() == null) ||
-                (user.getFname() != null && user.getFname().equals("null") &&
-                        user.getLname() != null && user.getLname().equals("null"));
     }
 
     private void verifyUsersInMainTable(ArrayList<User> tempList) {
@@ -233,7 +248,7 @@ public class SchoolHealth extends AppCompatActivity implements  NavigationView.O
         }
 
         for (User user : tempList) {
-            databaseReference.child(user.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+            usersRef.child(user.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if (snapshot.exists()) {
@@ -268,9 +283,40 @@ public class SchoolHealth extends AppCompatActivity implements  NavigationView.O
 
             if (healthIssueList.isEmpty()) {
                 Toast.makeText(SchoolHealth.this,
-                        "No students with valid health issues found in your school",
+                        "No students with valid health issues found in " + (isCurrentUserAdmin ? "admin" : "your") + " school",
                         Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.nav_course_comprehensive) {
+            startActivity(new Intent(this, ChooseYourCourse.class));
+        } else if (id == R.id.nav_course_health) {
+            startActivity(new Intent(this, ChooseYourCourseHealth.class));
+        } else if (id == R.id.nav_CourseInst) {
+            startActivity(new Intent(this, ChooseYourCourseInstructors.class));
+        } else if (id == R.id.nav_school_comprehensive) {
+            startActivity(new Intent(this, SchoolComp.class));
+        } else if (id == R.id.nav_instructors) {
+            startActivity(new Intent(this, SchoolInst.class));
+        } else if (id == R.id.nav_school_health) {
+            // Already in this activity
+        }
+
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
     }
 }
