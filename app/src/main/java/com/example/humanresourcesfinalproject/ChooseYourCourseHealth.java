@@ -146,7 +146,7 @@ public class ChooseYourCourseHealth extends AppCompatActivity {
 
     private void setupButtonListeners() {
         goBack.setOnClickListener(v -> {
-            startActivity(new Intent(ChooseYourCourseHealth.this, MainPage.class));
+            startActivity(new Intent(ChooseYourCourseHealth.this, MyLists.class));
             finish();
         });
     }

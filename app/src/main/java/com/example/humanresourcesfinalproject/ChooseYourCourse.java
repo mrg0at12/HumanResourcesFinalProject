@@ -169,7 +169,7 @@ public class ChooseYourCourse extends AppCompatActivity {
 
     private void setupButtonListeners() {
         goBack.setOnClickListener(v -> {
-            startActivity(new Intent(ChooseYourCourse.this, MainPage.class));
+            startActivity(new Intent(ChooseYourCourse.this, MyLists.class));
             finish();
         });
     }
